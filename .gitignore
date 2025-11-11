@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Credentials and tokens
+.config/token.json
+.config/client_secret_*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# JSON cache
+code_clinics_calendar.json
+
+# OS
+.DS_Store
+Thumbs.db
