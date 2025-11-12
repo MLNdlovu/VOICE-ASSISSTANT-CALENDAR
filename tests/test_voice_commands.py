@@ -1,10 +1,11 @@
 """
 Unit tests for voice command integration.
-Tests command parsing, datetime extraction, and summary extraction.
+Tests command parsing, datetime extraction, summary extraction, and voice output.
 """
 
 import pytest
-from voice_handler import VoiceCommandParser
+from datetime import datetime, timedelta
+from voice_handler import VoiceCommandParser, VoiceOutput
 
 
 class TestVoiceCommandParser:
@@ -230,6 +231,188 @@ class TestCommandIntegration:
             command, _ = VoiceCommandParser.parse_command(text)
             assert command == expected_command, \
                 f"Expected '{expected_command}' but got '{command}' for: {text}"
+
+
+class TestRelativeDateParsing:
+    """Test suite for relative date parsing functionality."""
+    
+    def test_today_parsing(self):
+        """Test 'today' relative date parsing."""
+        text = "Book today at 10:00"
+        date, _ = VoiceCommandParser.extract_datetime(text)
+        
+        expected_date = datetime.now().strftime('%Y-%m-%d')
+        assert date == expected_date, f"Expected '{expected_date}', got '{date}'"
+    
+    def test_tomorrow_parsing(self):
+        """Test 'tomorrow' relative date parsing."""
+        text = "Book tomorrow at 10:00"
+        date, _ = VoiceCommandParser.extract_datetime(text)
+        
+        expected_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        assert date == expected_date, f"Expected '{expected_date}', got '{date}'"
+    
+    def test_yesterday_parsing(self):
+        """Test 'yesterday' relative date parsing."""
+        text = "Show events from yesterday"
+        date, _ = VoiceCommandParser.extract_datetime(text)
+        
+        expected_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        assert date == expected_date, f"Expected '{expected_date}', got '{date}'"
+    
+    def test_in_days_parsing(self):
+        """Test 'in X days' relative date parsing."""
+        test_cases = [
+            ("Book in 3 days at 10:00", 3),
+            ("Schedule in 5 days", 5),
+            ("in 1 day", 1),
+        ]
+        
+        for text, days_ahead in test_cases:
+            date, _ = VoiceCommandParser.extract_datetime(text)
+            expected_date = (datetime.now() + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
+            assert date == expected_date, f"Failed to parse '{text}': expected '{expected_date}', got '{date}'"
+    
+    def test_in_weeks_parsing(self):
+        """Test 'in X weeks' relative date parsing."""
+        text = "Book in 2 weeks at 10:00"
+        date, _ = VoiceCommandParser.extract_datetime(text)
+        
+        expected_date = (datetime.now() + timedelta(weeks=2)).strftime('%Y-%m-%d')
+        assert date == expected_date, f"Expected '{expected_date}', got '{date}'"
+    
+    def test_next_day_parsing(self):
+        """Test 'next [day name]' parsing."""
+        # This test is more complex as it depends on the current day
+        # We'll just verify it doesn't raise an exception and returns a valid date
+        text = "Book next Monday at 10:00"
+        date, _ = VoiceCommandParser.extract_datetime(text)
+        
+        # Should return a valid date (not None)
+        assert date is not None, f"Failed to parse '{text}'"
+        
+        # Verify it's a valid date format
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            pytest.fail(f"Returned date '{date}' is not in valid YYYY-MM-DD format")
+    
+    def test_relative_date_with_absolute_time(self):
+        """Test relative dates with explicit times."""
+        test_cases = [
+            ("Book tomorrow at 14:30", "14:30"),
+            ("Schedule next Friday at 09:00", "09:00"),
+            ("in 3 days at 15:45", "15:45"),
+        ]
+        
+        for text, expected_time in test_cases:
+            date, time = VoiceCommandParser.extract_datetime(text)
+            assert time == expected_time, f"Time extraction failed for '{text}': expected '{expected_time}', got '{time}'"
+            assert date is not None, f"Date extraction failed for '{text}'"
+
+
+class TestVoiceOutput:
+    """Test suite for VoiceOutput (Text-to-Speech) functionality."""
+    
+    def test_voice_output_initialization(self):
+        """Test that VoiceOutput initializes properly."""
+        output = VoiceOutput()
+        # Should not raise an exception
+        assert output is not None
+    
+    def test_voice_output_is_available_check(self):
+        """Test availability check for text-to-speech."""
+        output = VoiceOutput()
+        is_available = output.is_available()
+        # is_available should be a boolean
+        assert isinstance(is_available, bool)
+    
+    def test_voice_output_rate_setting(self):
+        """Test setting speech rate."""
+        output = VoiceOutput()
+        if output.is_available():
+            output.set_rate(200)
+            assert output.rate == 200
+    
+    def test_voice_output_volume_setting(self):
+        """Test setting volume level."""
+        output = VoiceOutput()
+        if output.is_available():
+            output.set_volume(0.5)
+            assert output.volume == 0.5
+    
+    def test_voice_output_volume_bounds(self):
+        """Test that volume is bounded to 0.0-1.0."""
+        output = VoiceOutput()
+        if output.is_available():
+            # Valid volume
+            output.set_volume(0.7)
+            assert output.volume == 0.7
+            
+            # Invalid volumes should not change the value
+            current_volume = output.volume
+            output.set_volume(1.5)  # Too high
+            assert output.volume == current_volume
+            
+            output.set_volume(-0.5)  # Too low
+            assert output.volume == current_volume
+    
+    def test_voice_output_speak_method(self):
+        """Test the speak method (should not raise exceptions)."""
+        output = VoiceOutput()
+        # Should handle gracefully whether TTS is available or not
+        try:
+            output.speak("Test message", wait=False)
+        except Exception as e:
+            pytest.fail(f"speak() raised unexpected exception: {e}")
+    
+    def test_voice_output_speak_response_method(self):
+        """Test the speak_response convenience method."""
+        output = VoiceOutput()
+        # Should handle gracefully whether TTS is available or not
+        try:
+            output.speak_response("Welcome to Voice Assistant Calendar")
+        except Exception as e:
+            pytest.fail(f"speak_response() raised unexpected exception: {e}")
+
+
+class TestEnhancedDateTimeExtraction:
+    """Test suite for enhanced datetime extraction capabilities."""
+    
+    def test_time_with_am_pm_morning(self):
+        """Test time extraction with AM/PM format (morning)."""
+        test_cases = [
+            ("Book at 9:30 am", "09:30"),
+            ("Schedule at 10:00 AM", "10:00"),
+            ("11:45 am appointment", "11:45"),
+        ]
+        
+        for text, expected_time in test_cases:
+            _, time = VoiceCommandParser.extract_datetime(text)
+            assert time == expected_time, f"Failed for '{text}': expected '{expected_time}', got '{time}'"
+    
+    def test_time_with_am_pm_afternoon(self):
+        """Test time extraction with AM/PM format (afternoon)."""
+        test_cases = [
+            ("Book at 2:30 pm", "14:30"),
+            ("Schedule at 3:00 PM", "15:00"),
+            ("5:45 pm appointment", "17:45"),
+        ]
+        
+        for text, expected_time in test_cases:
+            _, time = VoiceCommandParser.extract_datetime(text)
+            assert time == expected_time, f"Failed for '{text}': expected '{expected_time}', got '{time}'"
+    
+    def test_time_noon_and_midnight(self):
+        """Test special cases for noon and midnight."""
+        test_cases = [
+            ("Book at 12:00 pm", "12:00"),  # Noon
+            ("Schedule at 12:00 am", "00:00"),  # Midnight
+        ]
+        
+        for text, expected_time in test_cases:
+            _, time = VoiceCommandParser.extract_datetime(text)
+            assert time == expected_time, f"Failed for '{text}': expected '{expected_time}', got '{time}'"
 
 
 if __name__ == "__main__":

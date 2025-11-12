@@ -1,18 +1,108 @@
 """
 Voice Command Integration Module
 
-This module handles voice input, speech recognition, and command parsing.
-It converts spoken commands into executable actions for the Code Clinics calendar system.
+This module handles voice input, speech recognition, command parsing, and voice output.
+It converts spoken commands into executable actions for the Voice Assistant Calendar system
+and provides AI voice responses back to the user.
 """
 
 import re
 from typing import Optional, Tuple
+from datetime import datetime, timedelta
 
 try:
     import speech_recognition as sr
     VOICE_AVAILABLE = True
 except ImportError:
     VOICE_AVAILABLE = False
+
+try:
+    import pyttsx3
+    TTS_AVAILABLE = True
+except ImportError:
+    TTS_AVAILABLE = False
+
+
+class VoiceOutput:
+    """
+    Handles text-to-speech voice output using pyttsx3.
+    Speaks AI responses back to the user with configurable voice settings.
+    """
+    
+    def __init__(self, rate: int = 150, volume: float = 0.9):
+        """
+        Initialize the voice output engine.
+        
+        Parameters:
+        - rate: Speech rate (words per minute). Default: 150.
+        - volume: Volume level (0.0 to 1.0). Default: 0.9.
+        """
+        self.rate = rate
+        self.volume = volume
+        
+        if not TTS_AVAILABLE:
+            print("[WARN] pyttsx3 not installed.")
+            print("   Install with: pip install pyttsx3")
+            self.engine = None
+        else:
+            try:
+                self.engine = pyttsx3.init()
+                self.engine.setProperty('rate', self.rate)
+                self.engine.setProperty('volume', self.volume)
+                print("[INFO] Voice output engine initialized.")
+            except Exception as e:
+                print(f"[WARN] Text-to-speech initialization failed: {e}")
+                self.engine = None
+    
+    def is_available(self) -> bool:
+        """Check if text-to-speech is available and working."""
+        return TTS_AVAILABLE and self.engine is not None
+    
+    def speak(self, text: str, wait: bool = True) -> None:
+        """
+        Speak the given text using text-to-speech.
+        
+        Parameters:
+        - text: The text to speak.
+        - wait: If True, wait for speech to finish before returning. Default: True.
+        """
+        if not self.is_available():
+            return
+        
+        try:
+            self.engine.say(text)
+            if wait:
+                self.engine.runAndWait()
+            else:
+                # Start speaking without blocking
+                self.engine.startLoop(False)
+        except Exception as e:
+            print(f"❌ Error during text-to-speech: {e}")
+    
+    def set_rate(self, rate: int) -> None:
+        """Set the speech rate (words per minute)."""
+        if self.is_available():
+            self.rate = rate
+            self.engine.setProperty('rate', rate)
+    
+    def set_volume(self, volume: float) -> None:
+        """Set the volume level (0.0 to 1.0)."""
+        if self.is_available() and 0.0 <= volume <= 1.0:
+            self.volume = volume
+            self.engine.setProperty('volume', volume)
+    
+    def speak_response(self, response: str) -> None:
+        """
+        Speak a formatted AI response with visual feedback.
+        
+        Parameters:
+        - response: The response text to speak.
+        """
+        if self.is_available():
+            print(f"[AI] {response}")
+            self.speak(response)
+        else:
+            print(f"[AI] {response}")
 
 
 class VoiceCommandParser:
@@ -94,24 +184,34 @@ class VoiceCommandParser:
     @staticmethod
     def extract_datetime(text: str) -> Tuple[Optional[str], Optional[str]]:
         """
-        Extracts date and time from voice command text.
+        Extracts date and time from voice command text with support for:
+        - Absolute dates: "2024-03-01", "03/01/2024", "01-03-2024"
+        - Relative dates: "tomorrow", "next Monday", "in 3 days", "next week"
+        - Time formats: "10:00", "2:30 pm", "14:30"
         
         Returns:
         Tuple of (date_str, time_str) in formats YYYY-MM-DD and HH:MM
         or (None, None) if not found.
         """
+        date_str = None
+        time_str = None
+        
+        # First, try to extract absolute date
         date_match = re.search(
             r'(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{4})',
             text
         )
         
-        time_match = re.search(r'(\d{1,2}):(\d{2})\s*(?:am|pm)?', text, re.IGNORECASE)
-        
-        date_str = None
-        time_str = None
-        
         if date_match:
             date_str = date_match.group(1).replace('/', '-')
+        else:
+            # Try relative date patterns
+            relative_date = VoiceCommandParser._parse_relative_date(text)
+            if relative_date:
+                date_str = relative_date
+        
+        # Extract time
+        time_match = re.search(r'(\d{1,2}):(\d{2})\s*(?:am|pm)?', text, re.IGNORECASE)
         
         if time_match:
             hour = int(time_match.group(1))
@@ -129,6 +229,64 @@ class VoiceCommandParser:
             time_str = f"{hour:02d}:{minute:02d}"
         
         return date_str, time_str
+    
+    @staticmethod
+    def _parse_relative_date(text: str) -> Optional[str]:
+        """
+        Parse relative date expressions and convert to YYYY-MM-DD format.
+        
+        Supports:
+        - "today", "tomorrow", "yesterday"
+        - "next Monday", "next Friday", etc.
+        - "in X days", "in X weeks"
+        - Specific day names
+        """
+        text_lower = text.lower()
+        today = datetime.now()
+        
+        # Handle exact relative dates
+        if re.search(r'\btoday\b', text_lower):
+            return today.strftime('%Y-%m-%d')
+        
+        if re.search(r'\btomorrow\b', text_lower):
+            return (today + timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        if re.search(r'\byesterday\b', text_lower):
+            return (today - timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        # Handle "next Monday", "next Friday", etc.
+        day_names = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        for day_idx, day_name in enumerate(day_names):
+            pattern = rf'\bnext\s+{day_name}\b'
+            if re.search(pattern, text_lower):
+                # Find next occurrence of that day
+                days_ahead = (day_idx - today.weekday()) % 7
+                if days_ahead <= 0:  # Target day already happened this week
+                    days_ahead += 7
+                target_date = today + timedelta(days=days_ahead)
+                return target_date.strftime('%Y-%m-%d')
+        
+        # Handle "in X days" or "in X weeks"
+        in_days_match = re.search(r'in\s+(\d+)\s+days?', text_lower)
+        if in_days_match:
+            days = int(in_days_match.group(1))
+            return (today + timedelta(days=days)).strftime('%Y-%m-%d')
+        
+        in_weeks_match = re.search(r'in\s+(\d+)\s+weeks?', text_lower)
+        if in_weeks_match:
+            weeks = int(in_weeks_match.group(1))
+            return (today + timedelta(weeks=weeks)).strftime('%Y-%m-%d')
+        
+        # Handle just day names (assume next occurrence)
+        for day_idx, day_name in enumerate(day_names):
+            if re.search(rf'\b{day_name}\b', text_lower):
+                days_ahead = (day_idx - today.weekday()) % 7
+                if days_ahead == 0:  # Today is that day
+                    days_ahead = 7  # Schedule for next week
+                target_date = today + timedelta(days=days_ahead)
+                return target_date.strftime('%Y-%m-%d')
+        
+        return None
     
     @staticmethod
     def extract_summary(text: str) -> Optional[str]:
@@ -220,7 +378,7 @@ class VoiceRecognizer:
         self.phrase_time_limit = phrase_time_limit
         
         if not VOICE_AVAILABLE:
-            print("⚠️  Warning: speech_recognition not installed.")
+            print("[WARN] speech_recognition not installed.")
             print("   Install with: pip install SpeechRecognition pyaudio")
             self.recognizer = None
             self.microphone = None
@@ -229,7 +387,7 @@ class VoiceRecognizer:
             try:
                 self.microphone = sr.Microphone()
             except Exception as e:
-                print(f"⚠️  Microphone initialization failed: {e}")
+                print(f"[WARN] Microphone initialization failed: {e}")
                 self.microphone = None
     
     def is_available(self) -> bool:
@@ -247,14 +405,14 @@ class VoiceRecognizer:
         Recognized text (lowercase) or None on failure.
         """
         if not self.is_available():
-            print("❌ Voice recognition is not available.")
+            print("[ERROR] Voice recognition is not available.")
             return None
         
         try:
             with self.microphone as source:
                 # Adapt to ambient noise
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
-                print(f"🎤 {prompt}")
+                print(f"[VOICE] {prompt}")
                 
                 # Capture audio
                 try:
@@ -264,25 +422,25 @@ class VoiceRecognizer:
                         phrase_time_limit=self.phrase_time_limit
                     )
                 except sr.WaitTimeoutError:
-                    print("⏱️  No speech detected (timeout).")
+                    print("[TIMEOUT] No speech detected (timeout).")
                     return None
             
             # Recognize speech using Google Speech Recognition
-            print("⏳ Processing audio...")
+            print("[INFO] Processing audio...")
             text = self.recognizer.recognize_google(audio)
-            print(f"✅ Heard: \"{text}\"")
+            print(f"[SUCCESS] Heard: \"{text}\"")
             return text.strip().lower()
         
         except sr.UnknownValueError:
-            print("❌ Sorry, could not understand audio. Please try again.")
+            print("[ERROR] Sorry, could not understand audio. Please try again.")
             return None
         
         except sr.RequestError as e:
-            print(f"❌ Speech recognition failed: {e}")
+            print(f"[ERROR] Speech recognition failed: {e}")
             return None
         
         except Exception as e:
-            print(f"❌ Unexpected error: {e}")
+            print(f"[ERROR] Unexpected error: {e}")
             return None
 
 
@@ -319,13 +477,52 @@ def get_voice_command() -> Tuple[str, dict]:
     return command, params
 
 
+# Global voice output instance
+_voice_output = None
+
+
+def get_voice_output() -> VoiceOutput:
+    """
+    Get or create the global voice output instance.
+    
+    Returns:
+    VoiceOutput instance for text-to-speech functionality.
+    """
+    global _voice_output
+    if _voice_output is None:
+        _voice_output = VoiceOutput()
+    return _voice_output
+
+
+def speak(text: str, wait: bool = True) -> None:
+    """
+    Convenience function to speak text using the global voice output instance.
+    
+    Parameters:
+    - text: The text to speak.
+    - wait: If True, wait for speech to finish before returning.
+    """
+    voice_output = get_voice_output()
+    voice_output.speak(text, wait)
+
+
 if __name__ == "__main__":
     # Test the voice command functionality
     print("=" * 60)
     print("Voice Command Integration Test")
     print("=" * 60)
     
-    print("\n1. Testing VoiceCommandParser:")
+    print("\n1. Testing VoiceOutput (Text-to-Speech):")
+    print("-" * 60)
+    
+    voice_output = VoiceOutput()
+    if voice_output.is_available():
+        print("[INFO] Text-to-speech engine initialized.")
+        voice_output.speak_response("Welcome to Voice Assistant Calendar. Ready to schedule your events.")
+    else:
+        print("[WARN] Text-to-speech not available. Install pyttsx3 to enable voice output.")
+    
+    print("\n2. Testing VoiceCommandParser:")
     print("-" * 60)
     
     # Test command parsing with example texts
@@ -345,12 +542,12 @@ if __name__ == "__main__":
         print(f"Parameters: {params}")
     
     print("\n" + "=" * 60)
-    print("2. Testing VoiceRecognizer availability:")
+    print("3. Testing VoiceRecognizer availability:")
     print("-" * 60)
     
     recognizer = VoiceRecognizer()
     print(f"Voice recognition available: {recognizer.is_available()}")
     
     if recognizer.is_available():
-        print("\n⚠️  Uncomment the line below to test live voice input:")
+        print("\n[INFO] Uncomment the line below to test live voice input:")
         print("   # voice_text = recognizer.listen()")

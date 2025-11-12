@@ -358,8 +358,47 @@ def main():
     service = build("calendar", "v3", credentials=creds)
     load_voice_assistant_calendar(service)
     
+    def prompt_for_interface_mode() -> str:
+        """Prompt user to choose between GUI and CLI input."""
+        print("\n" + "="*60)
+        print("Choose Interface Mode:")
+        print("="*60)
+        print("1. GUI Dashboard (graphical interface)")
+        print("2. CLI - Voice input (requires microphone)")
+        print("3. CLI - Text input")
+        print("Type 'gui', 'voice', or 'text' (default: gui): ", end="")
+        choice = input().strip().lower()
+        
+        if choice == 'voice':
+            return 'cli-voice'
+        elif choice == 'text':
+            return 'cli-text'
+        else:
+            return 'gui'
+    
+    # Check if GUI mode is requested
+    interface_mode = prompt_for_interface_mode()
+    
+    if interface_mode == 'gui':
+        try:
+            import gui_dashboard
+            print("Launching GUI Dashboard...")
+            gui_dashboard.launch_dashboard(service, "student")
+            return
+        except ImportError:
+            print("⚠️  GUI module not available. Falling back to CLI.")
+            interface_mode = 'cli-voice'
+        except Exception as e:
+            print(f"⚠️  Error launching GUI: {e}. Falling back to CLI.")
+            interface_mode = 'cli-voice'
+    
     def prompt_for_input_method() -> str:
         """Prompt user to choose between voice and text input."""
+        if interface_mode == 'cli-voice':
+            return 'voice'
+        elif interface_mode == 'cli-text':
+            return 'text'
+        
         print("\n" + "="*60)
         print("Choose Input Method:")
         print("="*60)

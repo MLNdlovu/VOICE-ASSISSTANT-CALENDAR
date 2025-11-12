@@ -10,6 +10,12 @@ prettytable==3.10.0
 SpeechRecognition==3.10.1
 pyaudio==0.2.13
 
+# Voice Output (Text-to-Speech)
+pyttsx3==2.90
+
+# GUI Development
+tkinter  # Usually comes with Python, but listed for reference
+
 # Testing
 pytest==7.4.3
 pytest-cov==4.1.0
