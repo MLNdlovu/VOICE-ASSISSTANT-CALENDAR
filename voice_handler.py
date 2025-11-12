@@ -9,6 +9,12 @@ and provides AI voice responses back to the user.
 import re
 from typing import Optional, Tuple
 from datetime import datetime, timedelta
+try:
+    from dateutil import parser as du_parser
+    DATEUTIL_AVAILABLE = True
+except Exception:
+    du_parser = None
+    DATEUTIL_AVAILABLE = False
 
 try:
     import speech_recognition as sr
@@ -123,6 +129,8 @@ class VoiceCommandParser:
         r"book\s+(?:a\s+)?session",
         r"i\s+want\s+to\s+book",
         r"schedule\s+(?:a\s+)?session",
+        r"\bbook\b",
+        r"add\s+.*\b(class|meeting|appointment|event)\b",
     ]
     
     CANCEL_PATTERNS = [
@@ -158,6 +166,32 @@ class VoiceCommandParser:
         r"how\s+do\s+i\s+share",
         r"calendar\s+sharing",
     ]
+
+    # Ask AI / assistant patterns
+    ASK_PATTERNS = [
+        r"\bassistant\b",
+        r"\bask\s+(?:assistant|ai)\b",
+        r"\bhey\s+assistant\b",
+        r"\bassistant\b",
+    ]
+
+    # Reminder patterns
+    REMIND_PATTERNS = [
+        r"remind\s+me",
+        r"set\s+(?:a\s+)?reminder",
+        r"set\s+reminder",
+    ]
+
+    # Declarative event patterns (user states they have an event)
+    DECLARE_EVENT_PATTERNS = [
+        r"\bi have\b",
+        r"\bi've got\b",
+        r"\bi have a\b",
+        r"\bi am going to\b",
+        r"\bi'm going to\b",
+        r"\bi have an appointment\b",
+        r"\bi have a meeting\b",
+    ]
     
     CONFIG_PATTERNS = [
         r"config",
@@ -171,6 +205,13 @@ class VoiceCommandParser:
         r"quit",
         r"goodbye",
         r"bye",
+    ]
+    
+    RESCHEDULE_PATTERNS = [
+        r"reschedule",
+        r"move\s+my\s+meeting",
+        r"change\s+the\s+time",
+        r"move\s+the\s+meeting",
     ]
     
     @staticmethod
@@ -196,37 +237,68 @@ class VoiceCommandParser:
         date_str = None
         time_str = None
         
-        # First, try to extract absolute date
-        date_match = re.search(
-            r'(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{4})',
-            text
-        )
-        
+        # First, try to extract absolute date numeric forms
+        date_match = re.search(r'(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{4})', text)
         if date_match:
             date_str = date_match.group(1).replace('/', '-')
         else:
-            # Try relative date patterns
+            # Try relative date patterns (today, tomorrow, next friday, etc.)
             relative_date = VoiceCommandParser._parse_relative_date(text)
             if relative_date:
                 date_str = relative_date
-        
-        # Extract time
-        time_match = re.search(r'(\d{1,2}):(\d{2})\s*(?:am|pm)?', text, re.IGNORECASE)
-        
+
+        # Extract time with prioritized patterns to avoid matching numbers inside years
+        # 1) HH:MM with optional AM/PM (e.g., 14:30, 2:30 pm)
+        time_match = re.search(r'\b(\d{1,2}):(\d{2})\s*(am|pm)?\b', text, re.IGNORECASE)
         if time_match:
             hour = int(time_match.group(1))
             minute = int(time_match.group(2))
-            
-            # Check for AM/PM
-            am_pm_match = re.search(r'(am|pm)', text, re.IGNORECASE)
-            if am_pm_match:
-                am_pm = am_pm_match.group(1).lower()
+            am_pm = time_match.group(3)
+            if am_pm:
+                am_pm = am_pm.lower()
                 if am_pm == 'pm' and hour < 12:
                     hour += 12
                 elif am_pm == 'am' and hour == 12:
                     hour = 0
-            
             time_str = f"{hour:02d}:{minute:02d}"
+        else:
+            # 2) 'at H' or 'at H am/pm' patterns (e.g., at 9, at 9 am, at 12 PM)
+            at_time_match = re.search(r'\bat\s+(\d{1,2})(?:\s*(am|pm))?\b', text, re.IGNORECASE)
+            if at_time_match:
+                hour = int(at_time_match.group(1))
+                minute = 0
+                am_pm = at_time_match.group(2)
+                if am_pm:
+                    am_pm = am_pm.lower()
+                    if am_pm == 'pm' and hour < 12:
+                        hour += 12
+                    elif am_pm == 'am' and hour == 12:
+                        hour = 0
+                time_str = f"{hour:02d}:{minute:02d}"
+            else:
+                # 3) standalone hour with am/pm (e.g., '9am')
+                standalone_am_pm = re.search(r'\b(\d{1,2})\s*(am|pm)\b', text, re.IGNORECASE)
+                if standalone_am_pm:
+                    hour = int(standalone_am_pm.group(1))
+                    minute = 0
+                    am_pm = standalone_am_pm.group(2).lower()
+                    if am_pm == 'pm' and hour < 12:
+                        hour += 12
+                    elif am_pm == 'am' and hour == 12:
+                        hour = 0
+                    time_str = f"{hour:02d}:{minute:02d}"
+
+        # If date or time still missing, try natural language parsing via dateutil (best-effort)
+        if DATEUTIL_AVAILABLE and (not date_str or not time_str):
+            try:
+                dt = du_parser.parse(text, fuzzy=True, default=datetime.now())
+                # Only extract date if not already found
+                if not date_str:
+                    date_str = dt.strftime('%Y-%m-%d')
+                if not time_str:
+                    time_str = dt.strftime('%H:%M')
+            except Exception:
+                pass
         
         return date_str, time_str
     
@@ -349,6 +421,37 @@ class VoiceCommandParser:
         
         elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.SHARE_PATTERNS):
             return 'share', {}
+
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.ASK_PATTERNS):
+            # Forward entire text to AI/chat handler
+            return 'ai', {'message': text}
+
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.REMIND_PATTERNS):
+            # Create a reminder: extract date/time and summary
+            date_str, time_str = VoiceCommandParser.extract_datetime(text)
+            summary = VoiceCommandParser.extract_summary(text) or 'Reminder'
+            return 'set-reminder', {'date': date_str, 'time': time_str, 'summary': summary}
+
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.DECLARE_EVENT_PATTERNS):
+            # Declarative statement like "I have a meeting on Friday at 9am"
+            date_str, time_str = VoiceCommandParser.extract_datetime(text)
+            # Summary: try to extract after "I have" or whole sentence minus date/time
+            summary = VoiceCommandParser.extract_summary(text)
+            if not summary:
+                # Fallback: remove date/time phrases
+                summary = re.sub(r"on\s+\w+|\bin\s+\d+\s+days|tomorrow|today|at\s+\d{1,2}:?\d{0,2}\s*(?:am|pm)?","", text, flags=re.IGNORECASE).strip()
+            summary = summary or 'Event'
+            return 'add-event', {'date': date_str, 'time': time_str, 'summary': summary}
+
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.RESCHEDULE_PATTERNS):
+            # Attempt to extract original and target datetimes
+            # Look for pattern like: "reschedule my meeting from 2024-03-01 10:00 to 2024-03-02 11:00"
+            parts = text.split(' to ')
+            orig_date, orig_time = VoiceCommandParser.extract_datetime(parts[0]) if parts else (None, None)
+            new_date, new_time = (None, None)
+            if len(parts) > 1:
+                new_date, new_time = VoiceCommandParser.extract_datetime(parts[1])
+            return 'reschedule', {'date': orig_date, 'time': orig_time, 'new_date': new_date, 'new_time': new_time}
         
         elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.CONFIG_PATTERNS):
             return 'config', {}

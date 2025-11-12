@@ -9,6 +9,7 @@ from prettytable import PrettyTable
 import book
 import get_details
 import voice_handler
+import ai_chatgpt
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -381,12 +382,12 @@ def main():
     
     if interface_mode == 'gui':
         try:
-            import gui_dashboard
-            print("Launching GUI Dashboard...")
-            gui_dashboard.launch_dashboard(service, "student")
+            import gui_enhanced
+            print("Launching Enhanced GUI Dashboard...")
+            gui_enhanced.launch_dashboard(service, "user")
             return
         except ImportError:
-            print("⚠️  GUI module not available. Falling back to CLI.")
+            print("⚠️  Enhanced GUI module not available. Falling back to CLI.")
             interface_mode = 'cli-voice'
         except Exception as e:
             print(f"⚠️  Error launching GUI: {e}. Falling back to CLI.")
@@ -462,6 +463,173 @@ def main():
             
             elif command == "share":
                 share_calendar_command(service, None)
+
+            elif command == 'ai':
+                # Forward question to ChatGPT and speak the response
+                message = voice_params.get('message') or None
+                if not message:
+                    # Fallback to text input
+                    message = input("Enter a question for the assistant: ").strip()
+
+                try:
+                    bot = ai_chatgpt.initialize_chatbot()
+                    if bot:
+                        # Provide simple calendar context
+                        try:
+                            now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                            events_result = service.events().list(calendarId='primary', timeMin=now, maxResults=10, singleEvents=True, orderBy='startTime').execute()
+                            events = events_result.get('items', [])
+                            context = {'upcoming_events': events, 'current_time': now, 'total_events_today': len(events)}
+                        except Exception:
+                            context = None
+
+                        response = bot.chat(message, calendar_context=context)
+                        print(f"AI: {response}")
+                        # Speak response if available
+                        try:
+                            voice_handler.speak(response)
+                        except Exception:
+                            pass
+                    else:
+                        print("ChatGPT not configured. Please set OPENAI_API_KEY.")
+                except Exception as e:
+                    print(f"AI error: {e}")
+
+                # Offer to book a suggested slot from the AI response
+                try:
+                    print("Would you like me to book a slot based on this suggestion? (yes/no)")
+                    # Try voice first
+                    recognizer = None
+                    try:
+                        recognizer = voice_handler.VoiceRecognizer()
+                    except Exception:
+                        recognizer = None
+
+                    ans_text = None
+                    if recognizer and recognizer.is_available():
+                        print("Listening for confirmation (say 'yes' or 'no')...")
+                        raw = recognizer.listen()
+                        if raw:
+                            ans_text = raw.lower()
+
+                    if not ans_text:
+                        ans_text = input("Confirm (yes/no): ").strip().lower()
+
+                    if ans_text and ans_text.startswith('y'):
+                        # Ask for date/time via voice or text
+                        print("Please say or type the date and time you'd like to book (e.g. '23 march 2026 at 10:00')")
+                        dt_text = None
+                        if recognizer and recognizer.is_available():
+                            raw = recognizer.listen()
+                            if raw:
+                                dt_text = raw
+
+                        if not dt_text:
+                            dt_text = input("Enter date and time: ").strip()
+
+                        # Try to extract date/time from dt_text
+                        try:
+                            date_parsed, time_parsed = voice_handler.VoiceCommandParser.extract_datetime(dt_text)
+                        except Exception:
+                            date_parsed, time_parsed = None, None
+
+                        if not date_parsed or not time_parsed:
+                            print("Could not parse date/time from your input. Please try booking manually.")
+                        else:
+                            user_email = get_details.get_email()
+                            start_iso = f"{date_parsed}T{time_parsed}:00+02:00"
+                            created = book.create_event_user(service, calendar_id='primary', email=user_email, start_time_iso=start_iso, summary='Booked via Assistant', duration_minutes=30, reminders=[10])
+                            if created:
+                                print("✅ Event booked based on AI suggestion")
+                                try:
+                                    voice_handler.speak("Event booked based on assistant suggestion")
+                                except Exception:
+                                    pass
+                            else:
+                                print("❌ Failed to create event from suggestion")
+
+                except Exception as e:
+                    print(f"Error during auto-book flow: {e}")
+
+            elif command == 'set-reminder':
+                # Set a reminder as an event with popup
+                if voice_params.get('email'):
+                    user_email = voice_params['email']
+                else:
+                    user_email = get_details.get_email()
+
+                if voice_params.get('date') and voice_params.get('time'):
+                    date = voice_params['date']
+                    time = voice_params['time']
+                else:
+                    date = get_details.get_date()
+                    time = get_details.get_time()
+
+                if voice_params.get('summary'):
+                    summary = voice_params['summary']
+                else:
+                    summary = get_details.get_decription()
+
+                start_iso = f"{date}T{time}:00+02:00"
+                created = book.create_event_user(service, calendar_id='primary', email=user_email, start_time_iso=start_iso, summary=summary, duration_minutes=30, reminders=[10])
+                if created:
+                    print("✅ Reminder set successfully")
+                    try:
+                        voice_handler.speak("Reminder set successfully")
+                    except Exception:
+                        pass
+                else:
+                    print("❌ Could not set reminder")
+            
+            elif command == 'add-event':
+                # Add an event declared by the user: "I have a birthday party on Friday at 7pm"
+                if voice_params.get('email'):
+                    user_email = voice_params['email']
+                else:
+                    # email optional for adding to primary calendar
+                    try:
+                        user_email = get_details.get_email()
+                    except Exception:
+                        user_email = None
+
+                date = voice_params.get('date')
+                time = voice_params.get('time')
+                summary = voice_params.get('summary') or 'Event'
+
+                if not date or not time:
+                    # Ask user for missing info
+                    print("I couldn't detect a date/time. Please say or type when the event is.")
+                    # Try voice then text
+                    try:
+                        recognizer = voice_handler.VoiceRecognizer()
+                        if recognizer.is_available():
+                            spoken = recognizer.listen()
+                            if spoken:
+                                d, t = voice_handler.VoiceCommandParser.extract_datetime(spoken)
+                                date = date or d
+                                time = time or t
+                    except Exception:
+                        pass
+
+                    if not date or not time:
+                        typed = input("Enter date and time (e.g. '23 march 2026 at 09:00'): ")
+                        d, t = voice_handler.VoiceCommandParser.extract_datetime(typed)
+                        date = date or d
+                        time = time or t
+
+                if not date or not time:
+                    print("❌ Still couldn't parse date/time. Aborting.")
+                else:
+                    start_iso = f"{date}T{time}:00+02:00"
+                    created = book.create_event_user(service, calendar_id='primary', email=user_email, start_time_iso=start_iso, summary=summary, duration_minutes=30, reminders=[10])
+                    if created:
+                        print("✅ Event added to your calendar")
+                        try:
+                            voice_handler.speak("Event added to your calendar")
+                        except Exception:
+                            pass
+                    else:
+                        print("❌ Failed to add event")
             
             elif command == "book":
                 # Try to use voice parameters if available
@@ -503,7 +671,47 @@ def main():
                     start_time = get_details.get_time()
                 
                 start_datetime = f"{start_date}T{start_time}"
-                book.cancel_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
+                # First try to cancel in the user's primary calendar
+                cancelled_primary = book.cancel_event_by_start(service, calendar_id='primary', start_time_iso=start_datetime, summary=None)
+                if cancelled_primary:
+                    print("✅ Booking canceled in your calendar.")
+                else:
+                    # Fallback to code clinics cancellation
+                    book.cancel_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
+
+            elif command == 'reschedule':
+                # Reschedule an event: cancel old and create new
+                if voice_params.get('email'):
+                    user_email = voice_params['email']
+                else:
+                    user_email = get_details.get_email()
+
+                orig_date = voice_params.get('date')
+                orig_time = voice_params.get('time')
+                new_date = voice_params.get('new_date')
+                new_time = voice_params.get('new_time')
+
+                if not (orig_date and orig_time and new_date and new_time):
+                    print("Please provide original date/time and new date/time to reschedule.")
+                    continue
+
+                orig_iso = f"{orig_date}T{orig_time}:00+02:00"
+                new_iso = f"{new_date}T{new_time}:00+02:00"
+
+                # Attempt to cancel original in primary
+                cancelled = book.cancel_event_by_start(service, calendar_id='primary', start_time_iso=orig_iso)
+                if cancelled:
+                    created = book.create_event_user(service, calendar_id='primary', email=user_email, start_time_iso=new_iso, summary='Rescheduled Event', duration_minutes=30, reminders=[10])
+                    if created:
+                        print("✅ Event rescheduled successfully")
+                        try:
+                            voice_handler.speak("Event rescheduled successfully")
+                        except Exception:
+                            pass
+                    else:
+                        print("❌ Failed to create rescheduled event")
+                else:
+                    print("❌ Could not find original event to reschedule")
             
             else:
                 print(f"❌ Unknown command: '{command}'")

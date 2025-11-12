@@ -1,38 +1,36 @@
 from datetime import datetime as dt
 import re
+from dateutil import parser as date_parser
 
 def get_email():
     """
     Prompts the user to enter an email and validates it.
 
     Returns:
-    The full email address (not just the username).
+    The full email address.
 
     Raises:
     None
 
-    This function prompts the user to enter an email address and validates it by checking if it ends with
-    either '@student.wethinkcode.co.za' or '@gmail.com'. If the entered email does not match either pattern,
-    the user is prompted to enter it again until a valid email is provided. Once a valid email is entered,
-    the function returns the full email address.
+    This function prompts the user to enter an email address and validates it using a basic regex pattern.
+    It accepts any valid email format (name@domain.extension). If the entered email does not match the pattern,
+    the user is prompted to enter it again until a valid email is provided.
 
     Example:
     ```
     # Get the email address
     email = get_email()
-    print(email)  # Output: lungelondlovu194@gmail.com
+    print(email)  # Output: user@example.com
     ```
     """
-    email=input("enter email: ")
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     
-    # Check if email ends with either student email or gmail
-    valid_email = (email.endswith("@student.wethinkcode.co.za") or 
-                   email.endswith("@gmail.com"))
+    email = input("Enter your email: ")
     
-    while not valid_email:
-        email=input("enter email: ")
-        valid_email = (email.endswith("@student.wethinkcode.co.za") or 
-                       email.endswith("@gmail.com"))
+    # Validate email format
+    while not re.match(email_pattern, email):
+        email = input("Invalid email format. Please enter a valid email (e.g., user@example.com): ")
 
     return email
 
@@ -126,31 +124,45 @@ def is_valid_time(time_str):
 
 def get_date():
     """
-    Prompts the user to enter a date in the format YYYY-MM-DD and validates it.
+    Prompts the user to enter a date in natural language (e.g., '23 march 2026') or YYYY-MM-DD format and validates it.
 
     Returns:
-    The validated date string entered by the user.
+    The validated date string in YYYY-MM-DD format.
 
     Raises:
     None
 
-    This function repeatedly prompts the user to enter a date in the format YYYY-MM-DD until a valid date is provided.
-    It uses regular expressions to validate the format of the entered date string and the `is_valid_date` function
-    to further validate if the date is a valid calendar date. Once a valid date is entered, the function returns the date.
+    This function repeatedly prompts the user to enter a date until a valid date is provided.
+    Accepts both natural language (e.g., "23 march 2026", "tomorrow", "next friday") and standard YYYY-MM-DD format.
 
     Example:
     ```
     # Get a valid date from the user
     date = get_date()
-    print(date)
+    print(date)  # Output: 2026-03-23
     ```
     """
+    from dateutil import parser as date_parser
+    
     while True:
-        date = input("Enter Date in format YYYY-MM-DD: ")
-        if re.match(r'^\d{4}-\d{2}-\d{2}$', date) and is_valid_date(date):
-            return date
-        else:
-            print("Invalid date format. Please enter date in format YYYY-MM-DD.")
+        date_input = input("Enter date (e.g., '23 march 2026' or 'YYYY-MM-DD'): ").strip()
+        
+        try:
+            # Try parsing natural language first
+            parsed_date = date_parser.parse(date_input)
+            result_date = parsed_date.strftime('%Y-%m-%d')
+            
+            # Validate it's a real date
+            if is_valid_date(result_date):
+                return result_date
+            else:
+                print("Invalid date. Please try again.")
+        except (ValueError, date_parser.ParserError):
+            # Try standard format
+            if re.match(r'^\d{4}-\d{2}-\d{2}$', date_input) and is_valid_date(date_input):
+                return date_input
+            else:
+                print("Invalid date format. Try 'YYYY-MM-DD' or natural language like '23 march 2026'.")
 
 
 def get_time():

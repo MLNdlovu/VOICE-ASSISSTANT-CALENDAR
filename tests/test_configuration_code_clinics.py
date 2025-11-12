@@ -4,7 +4,7 @@ import os.path
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
-from code_clinins_demo import (authenticate, #Mpilenhle: This is the first function I'm testing
+from voice_assistant_calendar import (authenticate, #Mpilenhle: This is the first function I'm testing
                                config_command)  
 
 class TestAuthenticate(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestAuthenticate(unittest.TestCase):
     @patch('google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file')
     @patch('builtins.open')
     @patch('webbrowser.open')
-    @patch('code_clinins_demo.build')
+    @patch('voice_assistant_calendar.build')
     def test_config_command(self, mock_build, mock_webbrowser_open, mock_open, mock_from_client_secrets_file):
         SCOPES = ["https://www.googleapis.com/auth/calendar"]
         # Mocking the flow

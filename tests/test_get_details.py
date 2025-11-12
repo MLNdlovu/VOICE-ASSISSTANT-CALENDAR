@@ -7,8 +7,8 @@ from get_details import get_email, get_decription, is_valid_date, is_valid_time,
 class TestFunctions(unittest.TestCase):
 
     def test_get_email_valid(self):
-        with patch('builtins.input', side_effect=['mdlamini023@student.wethinkcode.co.za']):
-            self.assertEqual(get_email(), 'mdlamini023')
+        with patch('builtins.input', side_effect=['user@example.com']):
+            self.assertEqual(get_email(), 'user@example.com')
 
     def test_get_description(self):
         with patch('builtins.input', return_value='This is a test description'):

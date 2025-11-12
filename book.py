@@ -52,11 +52,8 @@ def book_as_student(service,username,start_time,summary):
     """
     code_clinics_id='c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com'
     
-    # Generate email based on username format
-    if "@" in username:
-        attendee_email = username
-    else:
-        attendee_email = username + '@student.wethinkcode.co.za'
+    # Use email as-is (already validated in get_email)
+    attendee_email = username
     
     try:
         attendees = get_attendee(start_time)
@@ -338,3 +335,100 @@ def cancel_booking_command(service, args):
     else:
         print("Please provide both username and start time for canceling the booking.")
 # Volunteer helpers removed to simplify API surface
+
+
+def create_event_user(service, calendar_id='primary', email=None, start_time_iso=None, summary='Event', duration_minutes=30, reminders: list = [10]):
+    """
+    Create a calendar event in the specified calendar (default: primary).
+
+    Parameters:
+    - service: Google Calendar service
+    - calendar_id: Calendar ID (default 'primary')
+    - email: Optional attendee email
+    - start_time_iso: RFC3339 start time string (e.g., '2026-03-23T10:00:00+02:00')
+    - summary: Event title
+    - duration_minutes: Event duration in minutes
+    - reminders: List of reminder minutes (e.g., [10, 30])
+
+    Returns: created event resource or None on failure
+    """
+    try:
+        if not start_time_iso:
+            print("create_event_user: start_time_iso is required")
+            return None
+
+        # Parse start time
+        try:
+            start_dt = datetime.datetime.fromisoformat(start_time_iso)
+        except Exception:
+            # Try to parse without timezone then append +02:00
+            try:
+                start_dt = datetime.datetime.fromisoformat(start_time_iso + "+02:00")
+            except Exception as e:
+                print(f"Invalid start_time_iso: {e}")
+                return None
+
+        end_dt = start_dt + datetime.timedelta(minutes=duration_minutes)
+
+        event_body = {
+            'summary': summary,
+            'start': {'dateTime': start_dt.isoformat()},
+            'end': {'dateTime': end_dt.isoformat()},
+            'reminders': {
+                'useDefault': False,
+                'overrides': [{'method': 'popup', 'minutes': m} for m in reminders]
+            }
+        }
+
+        if email:
+            event_body['attendees'] = [{'email': email}]
+
+        created = service.events().insert(calendarId=calendar_id, body=event_body).execute()
+        print(f"Event created: {created.get('id')}")
+        return created
+    except Exception as e:
+        print(f"Failed to create event: {e}")
+        return None
+
+
+def cancel_event_by_start(service, calendar_id='primary', start_time_iso=None, summary=None):
+    """
+    Cancel (delete) an event in the specified calendar by its start time.
+
+    Parameters:
+    - service: Google Calendar service
+    - calendar_id: Calendar ID
+    - start_time_iso: RFC3339 start time
+    - summary: Optional summary to match
+
+    Returns: True if deleted, False otherwise
+    """
+    if not start_time_iso:
+        print("cancel_event_by_start: start_time_iso required")
+        return False
+
+    try:
+        # Use a small window to find the event
+        try:
+            start_dt = datetime.datetime.fromisoformat(start_time_iso)
+        except Exception:
+            start_dt = datetime.datetime.fromisoformat(start_time_iso + "+02:00")
+
+        time_min = (start_dt - datetime.timedelta(minutes=1)).isoformat()
+        time_max = (start_dt + datetime.timedelta(minutes=1)).isoformat()
+
+        events_result = service.events().list(calendarId=calendar_id, timeMin=time_min, timeMax=time_max, singleEvents=True).execute()
+        events = events_result.get('items', [])
+
+        for e in events:
+            if summary and summary.lower() not in e.get('summary', '').lower():
+                continue
+            service.events().delete(calendarId=calendar_id, eventId=e['id']).execute()
+            print('Event cancelled successfully')
+            return True
+
+        print('No matching event found to cancel')
+        return False
+    except Exception as e:
+        print(f"Error cancelling event: {e}")
+        return False
