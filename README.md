@@ -1,4 +1,4 @@
-# Code Clinics *(Code_CLinics_T12)
+# VOICE ASSISSTANT CALENDAR
 
 Code Clinic is a booking system designed to facilitate students helping each other with coding problems. 
 The system integrates with the Google Calendar API to manage appointments and schedules efficiently.
@@ -21,6 +21,3 @@ run python file
 ### Contributors of the project
 
 Lungelo Ndlovu
-Mandisa Dlamini
-Senzo Shinga
-Mpilenhle Mtaka
