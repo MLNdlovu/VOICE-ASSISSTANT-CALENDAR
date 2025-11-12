@@ -122,9 +122,9 @@ def add_30_minutes(time_str):
     
     return new_time_str
 
-def load_code_clinics_calender():
+def load_voice_assistant_calendar():
     """
-    Loads code clinics calendar events from a JSON file.
+    Loads voice assistant calendar events from a JSON file.
 
     Returns:
     A list of calendar events loaded from the JSON file. If the file is not found or
@@ -133,20 +133,20 @@ def load_code_clinics_calender():
     Raises:
     None
 
-    This function attempts to load code clinics calendar events from a JSON file named
-    'code_clinics_calendar.json'. If the file exists and can be successfully read,
+    This function attempts to load voice assistant calendar events from a JSON file named
+    'voice_assistant_calendar.json'. If the file exists and can be successfully read,
     it loads the events as a list. If there is any error in decoding JSON or if the
     file is not found, it returns an empty list.
 
     Example:
     ```
-    # Load code clinics calendar events
-    events = load_code_clinics_calendar()
+    # Load voice assistant calendar events
+    events = load_voice_assistant_calendar()
     print(events)
     ```
     """
     try:
-        with open("code_clinics_calendar.json", "r") as file:
+        with open("voice_assistant_calendar.json", "r") as file:
             events = json.load(file)
     except (json.JSONDecodeError, FileNotFoundError):
         events = []
@@ -180,7 +180,7 @@ def search_time(search_dateTime):
 
     matching_events = []
 
-    for event in load_code_clinics_calender():
+    for event in load_voice_assistant_calendar():
         if 'start' in event and 'dateTime' in event['start'] and event['start']['dateTime'] == search_dateTime:
             matching_events.append(event)
 
@@ -213,7 +213,7 @@ def get_event_id(datetime):
     ```
     """
 
-    for event in load_code_clinics_calender():
+    for event in load_voice_assistant_calendar():
         if 'start' in event and 'dateTime' in event['start'] and event['start']['dateTime'] == datetime:
             return event['id']
 
@@ -245,7 +245,7 @@ def get_attendee(datetime):
     ```
     """
 
-    for event in load_code_clinics_calender():
+    for event in load_voice_assistant_calendar():
         if 'start' in event and 'dateTime' in event['start'] and event['start']['dateTime'] == datetime:
             return event['attendees']
         

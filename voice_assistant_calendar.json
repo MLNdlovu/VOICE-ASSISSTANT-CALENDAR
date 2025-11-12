@@ -1,0 +1,1000 @@
+[
+    {
+        "kind": "calendar#event",
+        "etag": "\"3417861770252000\"",
+        "id": "7seqhimr2mls2l4upf6aihh8bq",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=N3NlcWhpbXIybWxzMmw0dXBmNmFpaGg4YnEgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-02-22T07:33:35.000Z",
+        "updated": "2024-02-26T07:01:25.126Z",
+        "summary": "Code Clinics Test",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-02-23T10:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-02-23T11:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "7seqhimr2mls2l4upf6aihh8bq@google.com",
+        "sequence": 2,
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3418217279466000\"",
+        "id": "npk94mj707riqqhtl12op2v5f0",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=bnBrOTRtajcwN3JpcXFodGwxMm9wMnY1ZjAgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-02-28T08:12:17.000Z",
+        "updated": "2024-02-28T08:23:59.733Z",
+        "summary": "Unit Testing",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-02-29T11:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-02-29T12:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "npk94mj707riqqhtl12op2v5f0@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "pmhlongo023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "mndlovu023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3418409027906000\"",
+        "id": "gdc9kq4e4smbe3sc6k2ftsq11c",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=Z2RjOWtxNGU0c21iZTNzYzZrMmZ0c3ExMWMgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-02-29T11:00:44.000Z",
+        "updated": "2024-02-29T11:01:53.953Z",
+        "summary": "Algorithms",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-01T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-01T13:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "gdc9kq4e4smbe3sc6k2ftsq11c@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mdlamini023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "mmtaka023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3418426850740000\"",
+        "id": "0khr8a09a82l1hm0rhrt6dr4ck",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=MGtocjhhMDlhODJsMWhtMHJocnQ2ZHI0Y2sgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-02-28T06:37:10.000Z",
+        "updated": "2024-02-29T13:30:25.370Z",
+        "summary": "code clinics",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-02-29T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-02-29T13:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "0khr8a09a82l1hm0rhrt6dr4ck@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "pmhlongo023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "mmsane023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3418431013308000\"",
+        "id": "18mcsbqntmf3asi0ng8bufleo3",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=MThtY3NicW50bWYzYXNpMG5nOGJ1ZmxlbzMgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-02-20T09:41:59.000Z",
+        "updated": "2024-02-29T14:05:06.654Z",
+        "summary": "mandisa",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "date": "2024-02-21"
+        },
+        "end": {
+            "date": "2024-02-22"
+        },
+        "transparency": "transparent",
+        "iCalUID": "18mcsbqntmf3asi0ng8bufleo3@google.com",
+        "sequence": 2,
+        "reminders": {
+            "useDefault": false
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3418586011672000\"",
+        "id": "qhn8l1lgpvhg53thd3nd0rj860",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=cWhuOGwxbGdwdmhnNTN0aGQzbmQwcmo4NjAgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-01T10:50:07.000Z",
+        "updated": "2024-03-01T11:36:45.836Z",
+        "summary": "python",
+        "creator": {
+            "email": "sshinga023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-04-30T12:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-04-30T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "qhn8l1lgpvhg53thd3nd0rj860@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "sshinga023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419248841570000\"",
+        "id": "hk0vaegj4vq6su4frb0d8ugpt4",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=aGswdmFlZ2o0dnE2c3U0ZnJiMGQ4dWdwdDQgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-02-29T13:31:33.000Z",
+        "updated": "2024-03-05T07:40:20.785Z",
+        "summary": "Code Clinics",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-01T14:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-01T15:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "hk0vaegj4vq6su4frb0d8ugpt4@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mmsane023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "zngeyane023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419426535712000\"",
+        "id": "p5jur6svpfn7n38l38bkp8b5po",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=cDVqdXI2c3ZwZm43bjM4bDM4YmtwOGI1cG8gY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T08:19:29.000Z",
+        "updated": "2024-03-06T08:21:07.856Z",
+        "summary": "python",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-06T09:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-06T09:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "p5jur6svpfn7n38l38bkp8b5po@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "pmhlongo023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "sshinga023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419428838922000\"",
+        "id": "cg9h9pmllt2hpm974efnh848vo",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=Y2c5aDlwbWxsdDJocG05NzRlZm5oODQ4dm8gY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T08:22:38.000Z",
+        "updated": "2024-03-06T08:40:19.461Z",
+        "summary": "json",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-06T13:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-06T14:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "cg9h9pmllt2hpm974efnh848vo@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "bntshantsha023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "ssithole023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419429264302000\"",
+        "id": "e0bu97kfvpud2rqj7sbfmv7v88",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=ZTBidTk3a2Z2cHVkMnJxajdzYmZtdjd2ODggY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T08:41:39.000Z",
+        "updated": "2024-03-06T08:43:52.151Z",
+        "summary": "TDD",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-07T10:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-07T10:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "e0bu97kfvpud2rqj7sbfmv7v88@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mdlamini023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "agcabashe023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419430281700000\"",
+        "id": "v1r6iv2ph8o1ducnto0nmd0efk",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=djFyNml2MnBoOG8xZHVjbnRvMG5tZDBlZmsgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T08:50:37.000Z",
+        "updated": "2024-03-06T08:52:20.850Z",
+        "summary": "React",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-07T11:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-07T11:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "v1r6iv2ph8o1ducnto0nmd0efk@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "syende023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "zessop023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419430811366000\"",
+        "id": "7f92or6cd31ikgo9dkmmqlpabs",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=N2Y5Mm9yNmNkMzFpa2dvOWRrbW1xbHBhYnMgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T08:55:07.000Z",
+        "updated": "2024-03-06T08:56:45.683Z",
+        "summary": "Javascript",
+        "creator": {
+            "email": "mdlamini023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-08T12:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-08T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "7f92or6cd31ikgo9dkmmqlpabs@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "sdumakude023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "mmenqe023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419431857314000\"",
+        "id": "of7qv5ab8an9pul8nl0v4ph7tc",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=b2Y3cXY1YWI4YW45cHVsOG5sMHY0cGg3dGMgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T09:03:54.000Z",
+        "updated": "2024-03-06T09:05:28.657Z",
+        "summary": "TDD Java",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-08T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-08T13:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "of7qv5ab8an9pul8nl0v4ph7tc@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mmtaka023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            },
+            {
+                "email": "smanzini023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419432406300000\"",
+        "id": "0immu1hed7rut4nebk60t4nrl4",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=MGltbXUxaGVkN3J1dDRuZWJrNjB0NG5ybDQgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T09:10:03.000Z",
+        "updated": "2024-03-06T09:10:03.150Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2023-03-11T10:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2023-03-11T10:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "0immu1hed7rut4nebk60t4nrl4@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "smzamo023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419432581464000\"",
+        "id": "338m0m6l2cg7knq42rl7u039ee",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=MzM4bTBtNmwyY2c3a25xNDJybDd1MDM5ZWUgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T09:11:30.000Z",
+        "updated": "2024-03-06T09:11:30.732Z",
+        "summary": "command-line arguments",
+        "colorId": "9",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-11T10:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-11T11:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "338m0m6l2cg7knq42rl7u039ee@google.com",
+        "sequence": 0,
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419433022460000\"",
+        "id": "1h2fak54kr5vs593gh6krqdkdu",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=MWgyZmFrNTRrcjV2czU5M2doNmtycWRrZHUgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T09:15:11.000Z",
+        "updated": "2024-03-06T09:15:11.230Z",
+        "summary": "Code Clinics Testing",
+        "colorId": "11",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "date": "2024-03-12"
+        },
+        "end": {
+            "date": "2024-03-13"
+        },
+        "transparency": "transparent",
+        "iCalUID": "1h2fak54kr5vs593gh6krqdkdu@google.com",
+        "sequence": 0,
+        "reminders": {
+            "useDefault": false
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419433072652000\"",
+        "id": "7qtg9s7s72gq38mjthslhqg48e",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=N3F0ZzlzN3M3MmdxMzhtanRoc2xocWc0OGUgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-06T09:15:36.000Z",
+        "updated": "2024-03-06T09:15:36.326Z",
+        "summary": "Toy 5 review",
+        "colorId": "10",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "date": "2024-03-13"
+        },
+        "end": {
+            "date": "2024-03-14"
+        },
+        "transparency": "transparent",
+        "iCalUID": "7qtg9s7s72gq38mjthslhqg48e@google.com",
+        "sequence": 0,
+        "reminders": {
+            "useDefault": false
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419774839202000\"",
+        "id": "5j1eblmrv16dm16c154enpgudo",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=NWoxZWJsbXJ2MTZkbTE2YzE1NGVucGd1ZG8gY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-08T08:43:39.000Z",
+        "updated": "2024-03-08T08:43:39.601Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-11T10:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-11T10:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "5j1eblmrv16dm16c154enpgudo@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mdlamini023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419774935124000\"",
+        "id": "37qsjlqslsi731k9fesie4h50c",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=Mzdxc2pscXNsc2k3MzFrOWZlc2llNGg1MGMgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-08T08:44:27.000Z",
+        "updated": "2024-03-08T08:44:27.562Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-12T13:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-12T14:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "37qsjlqslsi731k9fesie4h50c@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "sshinga023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3419775053044000\"",
+        "id": "bend4pe3u36ctbcknurj42v79k",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=YmVuZDRwZTN1MzZjdGJja251cmo0MnY3OWsgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2024-03-08T08:45:26.000Z",
+        "updated": "2024-03-08T08:45:26.522Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mmtaka023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2024-03-13T12:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2024-03-13T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "bend4pe3u36ctbcknurj42v79k@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "pmhlongo023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3525549696539038\"",
+        "id": "5ciidvp0ddm020cv84dsffg2vo",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=NWNpaWR2cDBkZG0wMjBjdjg0ZHNmZmcydm8gY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-10T11:40:48.000Z",
+        "updated": "2025-11-10T11:40:48.269Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-13T10:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-13T10:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "5ciidvp0ddm020cv84dsffg2vo@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mndlovu023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3525695921977534\"",
+        "id": "v9u5a2h7a7s0l8i4dn5a4lebk8",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=djl1NWEyaDdhN3MwbDhpNGRuNWE0bGViazggY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-11T07:59:20.000Z",
+        "updated": "2025-11-11T07:59:20.988Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-20T08:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-20T08:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "v9u5a2h7a7s0l8i4dn5a4lebk8@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mndlovu023@student.wethinkcode.co.za",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3525696948358430\"",
+        "id": "gq6laternvdb3dbblfftq16d8k",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=Z3E2bGF0ZXJudmRiM2RiYmxmZnRxMTZkOGsgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-11T08:07:53.000Z",
+        "updated": "2025-11-11T08:07:54.179Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-14T11:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-14T11:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "gq6laternvdb3dbblfftq16d8k@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "lungelondlovu194@gmail.com",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3525704317852862\"",
+        "id": "61u4jacfal7jkqoslu1mhsedf4",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=NjF1NGphY2ZhbDdqa3Fvc2x1MW1oc2VkZjQgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-11T09:09:18.000Z",
+        "updated": "2025-11-11T09:09:18.926Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-20T10:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-20T11:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "61u4jacfal7jkqoslu1mhsedf4@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "lungelondlovu194@gmail.com",
+                "responseStatus": "needsAction"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3525884663051262\"",
+        "id": "igtok2o9ksd05ts0s50rj9cs4k",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=aWd0b2sybzlrc2QwNXRzMHM1MHJqOWNzNGsgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-09T18:52:18.000Z",
+        "updated": "2025-11-12T10:12:11.525Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-12T12:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-12T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "igtok2o9ksd05ts0s50rj9cs4k@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mndlovu023@student.wethinkcode.co.za",
+                "responseStatus": "declined"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3525885778630462\"",
+        "id": "lcbg56391sci5q0d2gqdmmfkc0",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=bGNiZzU2Mzkxc2NpNXEwZDJncWRtbWZrYzAgY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-12T10:13:59.000Z",
+        "updated": "2025-11-12T10:21:29.315Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-13T12:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-13T12:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "lcbg56391sci5q0d2gqdmmfkc0@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "lungelon194@gmail.com",
+                "responseStatus": "accepted"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    }
+]

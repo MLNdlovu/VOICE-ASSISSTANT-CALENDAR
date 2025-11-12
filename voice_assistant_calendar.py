@@ -30,7 +30,7 @@ Calendar_ID='c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 # Constant for the shared calendar name
-SHARED_CALENDAR_NAME = "Code Clinics T12"
+SHARED_CALENDAR_NAME = "Voice Assistant Calendar"
 
 
 def authenticate():
@@ -234,9 +234,9 @@ def events_command(args):
     # Display events in a PrettyTable format
     display_events_prettytable(events)
 
-def load_code_clinics_calendar(service):
+def load_voice_assistant_calendar(service):
     """
-    Retrieves events from the Google Calendar associated with code clinics and saves them to a local JSON file.
+    Retrieves events from the Google Calendar associated with voice assistant and saves them to a local JSON file.
 
     Parameters:
     - service: An authenticated Google Calendar service object.
@@ -247,8 +247,8 @@ def load_code_clinics_calendar(service):
     Raises:
     None
 
-    This function retrieves events from the Google Calendar associated with code clinics using the provided
-    Google Calendar service object. It then saves the events to a local JSON file named 'code_clinics_calendar.json'.
+    This function retrieves events from the Google Calendar associated with voice assistant using the provided
+    Google Calendar service object. It then saves the events to a local JSON file named 'voice_assistant_calendar.json'.
     If no events are found, an empty JSON array is written to the file.
 
     Example:
@@ -256,8 +256,8 @@ def load_code_clinics_calendar(service):
     # Authenticate the user and obtain Google Calendar service object
     service = authenticate()
 
-    # Load events from the code clinics calendar and save them to a local JSON file
-    load_code_clinics_calendar(service)
+    # Load events from the voice assistant calendar and save them to a local JSON file
+    load_voice_assistant_calendar(service)
     ```
     """ 
     calendar_id = 'c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com'
@@ -265,7 +265,7 @@ def load_code_clinics_calendar(service):
     events = events_result.get('items', [])
 
     
-    with open('code_clinics_calendar.json', 'w') as f:
+    with open('voice_assistant_calendar.json', 'w') as f:
         json.dump(events, f, indent=4)
 
 
@@ -356,7 +356,7 @@ def share_calendar_command(service, args):
 def main():
     creds = authenticate()
     service = build("calendar", "v3", credentials=creds)
-    load_code_clinics_calendar(service)
+    load_voice_assistant_calendar(service)
     
     def prompt_for_input_method() -> str:
         """Prompt user to choose between voice and text input."""
@@ -446,7 +446,7 @@ def main():
                 
                 slot_time = book_date + "T" + book_time
                 book.book_as_student(service, user_name, slot_time, summary)
-                load_code_clinics_calendar(service)
+                load_voice_assistant_calendar(service)
             
             elif command == "cancel-book":
                 # Try to use voice parameters if available
