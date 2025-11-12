@@ -1,0 +1,15 @@
+# Core dependencies
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.104.0
+
+# UI/Display
+prettytable==3.10.0
+
+# Voice Recognition
+SpeechRecognition==3.10.1
+pyaudio==0.2.13
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0

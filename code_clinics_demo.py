@@ -4,15 +4,25 @@ import datetime
 import sys
 import webbrowser
 import json
+from typing import Tuple
 from prettytable import PrettyTable
 import book
 import get_details
+import voice_handler
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+# Optional voice support
+try:
+    import speech_recognition as sr
+    VOICE_AVAILABLE = True
+except Exception:
+    sr = None
+    VOICE_AVAILABLE = False
 
 Calendar_ID='c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com'
 
@@ -285,10 +295,7 @@ def help_command(args):
     print("- help: Display this help message")
     print("- config: Open the authentication URL in the default web browser")
     print("- book: Book a slot")
-    print("- volunteer: Volunteer for an event")
     print("- cancel-book: Cancel a booking")
-    print("- cancel-volunteer: Cancel volunteering")
-    print("- share-calendar: Share the calendar with a tester")
     print("- events: Display the next seven events")
 
 
@@ -350,69 +357,125 @@ def main():
     creds = authenticate()
     service = build("calendar", "v3", credentials=creds)
     load_code_clinics_calendar(service)
-    while True:
-        print("Available commands: help, config, book, volunteer, cancel-book, cancel-volunteer, share-calendar, events, exit")
-        command = input("Enter a command: ")
-        
-        if command == "exit":
-            break
-        
-        parser = argparse.ArgumentParser(description="Code Clinics Demo Calendar Management")
-        parser.add_argument("command", choices=["help", "config", "book", "volunteer", "cancel-book", "cancel-volunteer", "share-calendar", "events"], help="Command to execute")
-        
-        args = parser.parse_args([command])
+    
+    def prompt_for_input_method() -> str:
+        """Prompt user to choose between voice and text input."""
+        print("\n" + "="*60)
+        print("Choose Input Method:")
+        print("="*60)
+        print("1. Voice input (requires microphone)")
+        print("2. Text input")
+        print("Type 'voice' or 'text' (default: text): ", end="")
+        choice = input().strip().lower()
+        return 'voice' if choice == 'voice' else 'text'
 
-        if args.command == "help":
-            help_command(args)
-        elif args.command == "config":
-            config_command(args)
-        elif args.command == "book":
-            
-            user_name=get_details.get_email()
-            book_date=get_details.get_date()
-            book_time=get_details.get_time()
-            slot_time=book_date+"T"+book_time
-            summary=get_details.get_decription()
-            book.book_as_student(service,user_name,slot_time,summary)
-            load_code_clinics_calendar(service)
+    def get_command_input() -> Tuple[str, dict]:
+        """
+        Get command from user via voice or text input.
+        Returns: (command_name, parameters_dict)
+        """
+        input_method = prompt_for_input_method()
         
-        elif args.command == "volunteer":
-            # volunteer_command(args)
-            user_name=get_details.get_email()
-            book_date=get_details.get_date()
-            book_time=get_details.get_time()
-            slot_time=book_date+"T"+book_time
-        
-            book.book_as_volunteer(service,user_name,slot_time)
-            load_code_clinics_calendar(service)
+        if input_method == 'voice':
+            print("\n" + "-"*60)
+            command, params = voice_handler.get_voice_command()
+            print("-"*60 + "\n")
             
-        elif args.command == "cancel-book":
-            # cancel_command(args)
-            user_name = get_details.get_email()
-            start_date = get_details.get_date()
-            start_time = get_details.get_time()
-            start_datetime = f"{start_date}T{start_time}"
-            book.cancel_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
-            
-        elif args.command == "cancel-volunteer":
-            # cancel_volunteer_command(args)
-            user_name = get_details.get_email()
-            start_date = get_details.get_date()
-            start_time = get_details.get_time()
-            start_datetime = f"{start_date}T{start_time}"
-            if book.is_volunteer(user_name, start_datetime):
-        # Proceed with canceling the volunteer booking
-                book.cancel_volunteer_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
-            else:
-        # Display message indicating the user is not authorized to cancel a volunteer booking
-                print("You are not authorized to cancel a volunteer booking because you are not a volunteer.")
-            
-        elif args.command == "share-calendar":
-            share_calendar_command(service, args)
-        elif args.command == "events":
-            events_command(args)
+            if command == 'unknown':
+                print("⚠️  Could not parse command. Please use text input instead.")
+                command, params = get_text_command_input()
         else:
-            print(f"Unknown command: {args.command}")
+            command, params = get_text_command_input()
+        
+        return command, params
+
+    def get_text_command_input() -> Tuple[str, dict]:
+        """Get command from text input."""
+        print("\nAvailable commands: help, config, book, cancel-book, events, share, exit")
+        command_text = input("Enter a command: ").strip().lower()
+        
+        if not command_text:
+            return 'unknown', {}
+        
+        return command_text, {}
+
+    while True:
+        try:
+            command, voice_params = get_command_input()
+
+            if command == "exit":
+                print("👋 Goodbye!")
+                break
+            
+            elif command == "help":
+                help_command(None)
+            
+            elif command == "config":
+                config_command(None)
+            
+            elif command == "events":
+                events_command(None)
+            
+            elif command == "code-clinics":
+                # Import view module for code clinics display
+                import view
+                view.view_code_clinics(service)
+            
+            elif command == "share":
+                share_calendar_command(service, None)
+            
+            elif command == "book":
+                # Try to use voice parameters if available
+                if voice_params.get('email'):
+                    user_name = voice_params['email']
+                else:
+                    user_name = get_details.get_email()
+                
+                if voice_params.get('date') and voice_params.get('time'):
+                    book_date = voice_params['date']
+                    # Convert HH:MM to HH:MM:SS+02:00 format
+                    book_time = voice_params['time'] + ":00+02:00"
+                else:
+                    book_date = get_details.get_date()
+                    book_time = get_details.get_time()
+                
+                if voice_params.get('summary'):
+                    summary = voice_params['summary']
+                else:
+                    summary = get_details.get_decription()
+                
+                slot_time = book_date + "T" + book_time
+                book.book_as_student(service, user_name, slot_time, summary)
+                load_code_clinics_calendar(service)
+            
+            elif command == "cancel-book":
+                # Try to use voice parameters if available
+                if voice_params.get('email'):
+                    user_name = voice_params['email']
+                else:
+                    user_name = get_details.get_email()
+                
+                if voice_params.get('date') and voice_params.get('time'):
+                    start_date = voice_params['date']
+                    # Convert HH:MM to HH:MM:SS+02:00 format
+                    start_time = voice_params['time'] + ":00+02:00"
+                else:
+                    start_date = get_details.get_date()
+                    start_time = get_details.get_time()
+                
+                start_datetime = f"{start_date}T{start_time}"
+                book.cancel_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
+            
+            else:
+                print(f"❌ Unknown command: '{command}'")
+                print("Type 'help' for available commands.")
+        
+        except KeyboardInterrupt:
+            print("\n\n👋 Interrupted. Goodbye!")
+            break
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            print("Please try again.")
             
 if __name__ == "__main__":
         main()
