@@ -3,6 +3,7 @@ import datetime
 import json
 from prettytable import PrettyTable
 import view
+from googleapiclient.errors import HttpError
 
 # TODO: Book as a volunteer, a student with more knowledge and/or 
 # free period to volunteer for a code clinics session
@@ -127,21 +128,31 @@ def book_as_student(service,username,start_time,summary):
         attendee_email = username + '@student.wethinkcode.co.za'
     
     try:
-        if len(get_attendee(start_time))==1:
+        attendees = get_attendee(start_time)
+        # ensure exactly one volunteer is attached to the slot
+        if attendees and len(attendees) == 1:
+            if len(search_time(start_time)) < 2:
+                volunteer = attendees[0].get('email')
+                event_id = get_event_id(start_time)
+                if not event_id:
+                    print("Error: matching event not found in code clinics calendar.")
+                    return
 
-            if len(search_time(start_time))<2:
-                volunteer=get_attendee(start_time)[0]['email']
-            
-                event_id=get_event_id(start_time)
                 request_body = {
-                            'summary':summary,
-                            'attendees': [
-                            {'email':  username+"@student.wethinkcode.co.za"},
-                            {'email': volunteer}
-                            ]
-                        }
-                service.events().patch(calendarId=code_clinics_id, eventId=event_id, body=request_body).execute()
-    except TypeError as t:
+                    'summary': summary,
+                    'attendees': [
+                        {'email': attendee_email},   # use validated full student email
+                        {'email': volunteer}
+                    ]
+                }
+                try:
+                    service.events().patch(calendarId=code_clinics_id, eventId=event_id, body=request_body).execute()
+                    print("slot booked successfully")
+                except HttpError as he:
+                    print(f"Failed to update event attendees: {he}")
+        else:
+            print("The slot is not available for booking as a student.")
+    except TypeError:
         print("the slot is not available")
         print("try booking a slot that has been volunteered for")
 
