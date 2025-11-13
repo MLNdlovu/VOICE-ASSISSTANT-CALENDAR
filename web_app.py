@@ -27,9 +27,10 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', secrets.token_hex(16))
 
 # Google OAuth configuration
 SCOPES = [
+    # Use the canonical userinfo scopes to match what Google's token endpoint returns
     'openid',
-    'email',
-    'profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/calendar'
 ]
 
@@ -310,6 +311,137 @@ def get_user():
         'email': session.get('user_email'),
         'authenticated': True
     })
+
+
+@app.route('/api/voice', methods=['POST'])
+@login_required
+def voice_command():
+    """
+    Process voice commands from the web UI.
+    Accepts voice text, parses it, and executes the command.
+    """
+    try:
+        data = request.get_json()
+        voice_text = data.get('text', '').strip()
+        
+        if not voice_text:
+            return jsonify({'error': 'No voice text provided'}), 400
+        
+        # Import voice handler to parse commands
+        from voice_handler import VoiceCommandParser
+        
+        # Parse the voice command
+        command, params = VoiceCommandParser.parse_command(voice_text)
+        
+        # Process the command
+        if command == 'book':
+            # Book an event
+            email = params.get('email') or session.get('user_email')
+            date = params.get('date')
+            time = params.get('time')
+            summary = params.get('summary', 'Event')
+            
+            if not all([email, date, time]):
+                return jsonify({'error': 'Missing date or time in voice command. Please provide all details.', 'command': command, 'params': params}), 400
+            
+            service = get_calendar_service()
+            if not service:
+                return jsonify({'error': 'Not authenticated'}), 401
+            
+            start_iso = f"{date}T{time}:00+02:00"
+            created = book.create_event_user(
+                service,
+                calendar_id='primary',
+                email=email,
+                start_time_iso=start_iso,
+                summary=summary,
+                duration_minutes=30,
+                reminders=[10]
+            )
+            
+            if created:
+                return jsonify({
+                    'success': True,
+                    'command': command,
+                    'message': f'✅ Event booked: {summary} on {date} at {time}',
+                    'event_id': created
+                })
+            else:
+                return jsonify({'error': 'Failed to create event', 'command': command}), 500
+        
+        elif command == 'cancel-book':
+            # Cancel an event
+            date = params.get('date')
+            time = params.get('time')
+            
+            if not all([date, time]):
+                return jsonify({'error': 'Please specify date and time to cancel', 'command': command}), 400
+            
+            service = get_calendar_service()
+            if not service:
+                return jsonify({'error': 'Not authenticated'}), 401
+            
+            start_iso = f"{date}T{time}:00+02:00"
+            cancelled = book.cancel_event_by_start(service, calendar_id='primary', start_time_iso=start_iso)
+            
+            if cancelled:
+                return jsonify({
+                    'success': True,
+                    'command': command,
+                    'message': f'✅ Event cancelled on {date} at {time}'
+                })
+            else:
+                return jsonify({'error': 'Event not found', 'command': command}), 404
+        
+        elif command == 'events':
+            # Show upcoming events
+            service = get_calendar_service()
+            if not service:
+                return jsonify({'error': 'Not authenticated'}), 401
+            
+            now = datetime.now(timezone.utc).isoformat()
+            events_result = service.events().list(
+                calendarId='primary',
+                timeMin=now,
+                maxResults=5,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            
+            events = events_result.get('items', [])
+            return jsonify({
+                'success': True,
+                'command': command,
+                'events': events,
+                'message': f'You have {len(events)} upcoming events'
+            })
+        
+        elif command == 'help':
+            # Show available commands
+            return jsonify({
+                'success': True,
+                'command': command,
+                'message': 'Available commands: book, cancel-book, events, help, share, config, exit'
+            })
+        
+        elif command == 'share':
+            # Calendar sharing instructions
+            return jsonify({
+                'success': True,
+                'command': command,
+                'message': 'Share your calendar by opening Google Calendar settings and adding collaborators.'
+            })
+        
+        else:
+            # Unknown command
+            return jsonify({
+                'success': False,
+                'command': command,
+                'message': f'Unknown command: {voice_text}. Try "book", "cancel", "events", or "help"'
+            }), 400
+    
+    except Exception as e:
+        return jsonify({'error': str(e), 'type': 'exception'}), 500
 
 
 if __name__ == '__main__':

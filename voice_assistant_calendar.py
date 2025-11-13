@@ -646,8 +646,9 @@ def main():
                 else:
                     summary = get_details.get_decription()
                 
-                slot_time = book_date + "T" + book_time
-                book.book_as_student(service, user_name, slot_time, summary)
+                # Create event in user's primary calendar (replaces book_as_student)
+                start_iso = f"{book_date}T{book_time}:00+02:00"
+                book.create_event_user(service, calendar_id='primary', email=user_name, start_time_iso=start_iso, summary=summary, duration_minutes=30, reminders=[10])
                 load_voice_assistant_calendar(service)
             
             elif command == "cancel-book":

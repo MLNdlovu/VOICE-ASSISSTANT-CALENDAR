@@ -2,6 +2,110 @@
 
 const API_BASE = '/api';
 
+// Web Speech API Recognition (if available)
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isListening = false;
+
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = function() {
+        isListening = true;
+        document.getElementById('voice-record-btn').style.display = 'none';
+        document.getElementById('voice-stop-btn').style.display = 'block';
+        document.getElementById('voice-response').innerHTML = '<p style="color: #42a5f5;">🎤 Listening...</p>';
+    };
+    
+    recognition.onresult = function(event) {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+                transcript += event.results[i][0].transcript;
+            }
+        }
+        document.getElementById('voice-text-input').value = transcript.toLowerCase();
+    };
+    
+    recognition.onerror = function(event) {
+        document.getElementById('voice-response').innerHTML = `<p style="color: #f44336;">❌ Error: ${event.error}</p>`;
+    };
+    
+    recognition.onend = function() {
+        isListening = false;
+        document.getElementById('voice-record-btn').style.display = 'block';
+        document.getElementById('voice-stop-btn').style.display = 'none';
+    };
+}
+
+function startVoiceInput() {
+    if (recognition) {
+        recognition.start();
+    } else {
+        document.getElementById('voice-response').innerHTML = '<p style="color: #f44336;">❌ Web Speech API not supported in this browser. Please type a command instead.</p>';
+    }
+}
+
+function stopVoiceInput() {
+    if (recognition && isListening) {
+        recognition.stop();
+    }
+}
+
+async function executeVoiceCommand() {
+    const voiceText = document.getElementById('voice-text-input').value.trim();
+    
+    if (!voiceText) {
+        document.getElementById('voice-response').innerHTML = '<p style="color: #f44336;">⚠️ Please enter or speak a command.</p>';
+        return;
+    }
+    
+    document.getElementById('voice-response').innerHTML = '<p style="color: #42a5f5;">⏳ Processing command...</p>';
+    
+    try {
+        const response = await fetch(`${API_BASE}/voice`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: voiceText })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            document.getElementById('voice-response').innerHTML = `
+                <div style="background: rgba(76, 175, 80, 0.2); border-left: 4px solid #4caf50; padding: 16px; border-radius: 6px;">
+                    <h4 style="color: #4caf50; margin: 0 0 10px 0;">✅ Command Executed</h4>
+                    <p style="margin: 0;"><strong>Command:</strong> ${result.command}</p>
+                    <p style="margin: 10px 0 0 0;"><strong>Message:</strong> ${result.message}</p>
+                </div>
+            `;
+            
+            // Auto-refresh events if applicable
+            if (result.command === 'book' || result.command === 'cancel-book' || result.command === 'events') {
+                setTimeout(() => loadEvents(), 1000);
+            }
+        } else {
+            document.getElementById('voice-response').innerHTML = `
+                <div style="background: rgba(244, 67, 54, 0.2); border-left: 4px solid #f44336; padding: 16px; border-radius: 6px;">
+                    <h4 style="color: #f44336; margin: 0 0 10px 0;">❌ Command Failed</h4>
+                    <p style="margin: 0;"><strong>Error:</strong> ${result.error || 'Unknown error'}</p>
+                    ${result.params ? `<p style="margin: 10px 0 0 0;"><small>Parsed: ${JSON.stringify(result.params)}</small></p>` : ''}
+                </div>
+            `;
+        }
+    } catch (error) {
+        document.getElementById('voice-response').innerHTML = `<div style="background: rgba(244, 67, 54, 0.2); border-left: 4px solid #f44336; padding: 16px; border-radius: 6px;"><p style="color: #f44336; margin: 0;">❌ Error: ${error.message}</p></div>`;
+    }
+    
+    // Clear input
+    document.getElementById('voice-text-input').value = '';
+}
+
 // Tab switching
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', function() {

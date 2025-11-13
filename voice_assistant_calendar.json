@@ -809,44 +809,6 @@
     },
     {
         "kind": "calendar#event",
-        "etag": "\"3525695921977534\"",
-        "id": "v9u5a2h7a7s0l8i4dn5a4lebk8",
-        "status": "confirmed",
-        "htmlLink": "https://www.google.com/calendar/event?eid=djl1NWEyaDdhN3MwbDhpNGRuNWE0bGViazggY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
-        "created": "2025-11-11T07:59:20.000Z",
-        "updated": "2025-11-11T07:59:20.988Z",
-        "summary": "Code Clinic Session",
-        "creator": {
-            "email": "mndlovu023@student.wethinkcode.co.za"
-        },
-        "organizer": {
-            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
-            "displayName": "Code Clinics 12",
-            "self": true
-        },
-        "start": {
-            "dateTime": "2025-11-20T08:00:00+02:00",
-            "timeZone": "Africa/Johannesburg"
-        },
-        "end": {
-            "dateTime": "2025-11-20T08:30:00+02:00",
-            "timeZone": "Africa/Johannesburg"
-        },
-        "iCalUID": "v9u5a2h7a7s0l8i4dn5a4lebk8@google.com",
-        "sequence": 0,
-        "attendees": [
-            {
-                "email": "mndlovu023@student.wethinkcode.co.za",
-                "responseStatus": "needsAction"
-            }
-        ],
-        "reminders": {
-            "useDefault": true
-        },
-        "eventType": "default"
-    },
-    {
-        "kind": "calendar#event",
         "etag": "\"3525696948358430\"",
         "id": "gq6laternvdb3dbblfftq16d8k",
         "status": "confirmed",
@@ -990,6 +952,44 @@
             {
                 "email": "lungelon194@gmail.com",
                 "responseStatus": "accepted"
+            }
+        ],
+        "reminders": {
+            "useDefault": true
+        },
+        "eventType": "default"
+    },
+    {
+        "kind": "calendar#event",
+        "etag": "\"3526050466133630\"",
+        "id": "v9u5a2h7a7s0l8i4dn5a4lebk8",
+        "status": "confirmed",
+        "htmlLink": "https://www.google.com/calendar/event?eid=djl1NWEyaDdhN3MwbDhpNGRuNWE0bGViazggY18zYjIzYTZkY2M4MThlZjZmYzg3MDk5YjQ5MmRiMTBmZjJjNGIzZDQ3MDM2YTFhZWRlMTcxYmMxZDE5ZmIwMDU5QGc",
+        "created": "2025-11-11T07:59:20.000Z",
+        "updated": "2025-11-13T09:13:53.066Z",
+        "summary": "Code Clinic Session",
+        "creator": {
+            "email": "mndlovu023@student.wethinkcode.co.za"
+        },
+        "organizer": {
+            "email": "c_3b23a6dcc818ef6fc87099b492db10ff2c4b3d47036a1aede171bc1d19fb0059@group.calendar.google.com",
+            "displayName": "Code Clinics 12",
+            "self": true
+        },
+        "start": {
+            "dateTime": "2025-11-20T08:00:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "end": {
+            "dateTime": "2025-11-20T08:30:00+02:00",
+            "timeZone": "Africa/Johannesburg"
+        },
+        "iCalUID": "v9u5a2h7a7s0l8i4dn5a4lebk8@google.com",
+        "sequence": 0,
+        "attendees": [
+            {
+                "email": "mndlovu023@student.wethinkcode.co.za",
+                "responseStatus": "declined"
             }
         ],
         "reminders": {

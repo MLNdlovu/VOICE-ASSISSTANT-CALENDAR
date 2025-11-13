@@ -24,14 +24,17 @@
             <!-- Sidebar Navigation -->
             <aside class="sidebar">
                 <nav class="nav-menu">
-                    <button class="nav-btn active" data-tab="events">
+                    <button class="nav-btn active" data-tab="voice">
+                        🎤 Voice Commands
+                    </button>
+                    <button class="nav-btn" data-tab="events">
                         📅 My Events
                     </button>
                     <button class="nav-btn" data-tab="book">
                         ➕ Book Event
                     </button>
                     <button class="nav-btn" data-tab="commands">
-                        🎤 Commands
+                        ℹ️ Commands
                     </button>
                     <button class="nav-btn" data-tab="settings">
                         ⚙️ Settings
@@ -41,8 +44,32 @@
 
             <!-- Content Area -->
             <section class="content">
+                <!-- Voice Commands Tab -->
+                <div class="tab-content active" id="voice-tab">
+                    <h2>🎤 Voice Commands</h2>
+                    <p style="margin-bottom: 20px; color: #b3e5fc;">Click the microphone button to speak a command or type text to execute voice commands.</p>
+                    
+                    <div class="voice-input-section">
+                        <div class="voice-controls">
+                            <button id="voice-record-btn" class="btn btn-primary" onclick="startVoiceInput()">
+                                🎤 Start Recording
+                            </button>
+                            <button id="voice-stop-btn" class="btn btn-danger" onclick="stopVoiceInput()" style="display: none;">
+                                ⏹️ Stop Recording
+                            </button>
+                        </div>
+                        
+                        <div class="voice-input-box">
+                            <input type="text" id="voice-text-input" placeholder="Or type a command here..." style="width: 100%; padding: 12px; border: 2px solid #42a5f5; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
+                            <button onclick="executeVoiceCommand()" class="btn btn-primary" style="width: 100%;">Execute Command</button>
+                        </div>
+                        
+                        <div id="voice-response" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+
                 <!-- Events Tab -->
-                <div class="tab-content active" id="events-tab">
+                <div class="tab-content" id="events-tab">
                     <h2>📅 Upcoming Events</h2>
                     <div id="events-list" class="events-list">
                         <p class="loading">Loading events...</p>

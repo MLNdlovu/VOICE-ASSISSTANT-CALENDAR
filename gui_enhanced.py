@@ -957,8 +957,13 @@ def launch_dashboard(service, user_role="user"):
     - service: Authenticated Google Calendar service
     - user_role: Role of the user
     """
-    gui = VoiceAssistantGUI(service, user_role)
+    gui = AppSettings()  # Use AppSettings as the main GUI class
+    gui.service = service
     gui.run()
+
+
+# Alias for backward compatibility
+VoiceAssistantGUI = AppSettings
 
 
 if __name__ == "__main__":

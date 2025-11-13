@@ -301,6 +301,43 @@ body {
     box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
 }
 
+.btn-danger {
+    background-color: var(--error-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+/* Voice Input Section */
+.voice-input-section {
+    background-color: var(--bg-color);
+    border: 2px solid var(--secondary-color);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.voice-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.voice-input-box {
+    margin: 20px 0;
+}
+
 .btn-logout {
     background-color: var(--error-color);
     color: white;
