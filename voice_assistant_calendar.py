@@ -302,7 +302,7 @@ def help_command(args):
 
 def share_calendar_command(service, args):
     """
-    Provides instructions for sharing the user's calendar with Code Clinics.
+    Provides instructions for sharing the user's calendar with the Voice Assistant Calendar.
     
     Parameters:
     - service: An authenticated Google Calendar service object.
@@ -312,27 +312,27 @@ def share_calendar_command(service, args):
     None
     
     This function displays step-by-step instructions for users to share their personal
-    calendar with the Code Clinics application so that their availability can be viewed.
+    calendar with the Voice Assistant Calendar application so that their availability can be viewed.
     """
     print("\n" + "="*60)
-    print("HOW TO SHARE YOUR CALENDAR WITH CODE CLINICS")
+    print("HOW TO SHARE YOUR CALENDAR WITH VOICE ASSISTANT")
     print("="*60)
     
-    print("\n📅 STEP 1: Subscribe to Code Clinics Calendar")
-    print("-" * 60)
-    print("1. Go to Google Calendar: https://calendar.google.com")
-    print("2. On the left sidebar, find 'Other calendars'")
-    print("3. Click the '+' button next to 'Other calendars'")
-    print("4. Select 'Subscribe to calendar'")
-    print("5. Enter this calendar ID:")
-    print(f"   {Calendar_ID}")
-    print("6. Click 'Subscribe'")
-    
-    print("\n📤 STEP 2: Share YOUR Calendar with Code Clinics")
+    print("\n📅 STEP 1: Share Your Calendar")
     print("-" * 60)
     print("1. Go to Google Calendar: https://calendar.google.com")
     print("2. On the left sidebar, find your calendar name")
     print("3. Click the three dots menu next to your calendar")
+    print("4. Select 'Settings and sharing'")
+    print("5. Under 'Share with specific people', click '+ Add people'")
+    print("6. Add authorized users for calendar sharing")
+    
+    print("\n📤 STEP 2: Enable Calendar for Voice Assistant")
+    print("-" * 60)
+    print("1. Make sure your primary calendar is accessible")
+    print("2. Set appropriate sharing permissions")
+    print("3. The Voice Assistant Calendar will use your primary calendar")
+    print("4. All events will be synced automatically")
     print("4. Select 'Settings and sharing'")
     print("5. Scroll down to 'Share with specific people'")
     print("6. Click 'Add people'")
@@ -455,11 +455,6 @@ def main():
             
             elif command == "events":
                 events_command(None)
-            
-            elif command == "code-clinics":
-                # Import view module for code clinics display
-                import view
-                view.view_code_clinics(service)
             
             elif command == "share":
                 share_calendar_command(service, None)

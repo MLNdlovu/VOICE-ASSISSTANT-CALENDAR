@@ -352,6 +352,60 @@ body {
     text-decoration: underline;
 }
 
+/* Commands Grid */
+.commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.command-section {
+    background-color: var(--bg-color);
+    border-left: 4px solid var(--secondary-color);
+    padding: 20px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.command-section:hover {
+    box-shadow: 0 4px 12px rgba(66, 165, 245, 0.2);
+    transform: translateY(-2px);
+}
+
+.command-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+}
+
+.command-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.command-item {
+    padding: 12px;
+    background-color: rgba(66, 165, 245, 0.05);
+    border: 1px solid rgba(66, 165, 245, 0.2);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.command-item:hover {
+    background-color: rgba(66, 165, 245, 0.1);
+    border-color: rgba(66, 165, 245, 0.4);
+}
+
+.command-text {
+    font-size: 13px;
+    color: var(--text-color);
+    font-style: italic;
+    font-family: 'Courier New', monospace;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .main-content {

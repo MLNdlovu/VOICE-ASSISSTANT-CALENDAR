@@ -30,6 +30,9 @@
                     <button class="nav-btn" data-tab="book">
                         ➕ Book Event
                     </button>
+                    <button class="nav-btn" data-tab="commands">
+                        🎤 Commands
+                    </button>
                     <button class="nav-btn" data-tab="settings">
                         ⚙️ Settings
                     </button>
@@ -105,6 +108,133 @@
                         <button type="submit" class="btn btn-primary">💾 Save Settings</button>
                         <p id="settings-message" class="message"></p>
                     </form>
+                </div>
+
+                <!-- Commands Tab -->
+                <div class="tab-content" id="commands-tab">
+                    <h2>🎤 Voice Commands</h2>
+                    <p style="margin-bottom: 20px; color: #b3e5fc;">Use these voice commands to interact with your calendar:</p>
+                    
+                    <div class="commands-grid">
+                        <!-- Booking Commands -->
+                        <div class="command-section">
+                            <h3 class="command-title">📅 Booking Events</h3>
+                            <div class="command-list">
+                                <div class="command-item">
+                                    <span class="command-text">"Book a meeting tomorrow at 2 PM for project discussion"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Schedule a meeting on March 15th at 10:00 AM"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Add an event next week at 3 PM called team standup"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Create a reminder in 2 hours for the meeting"</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cancellation Commands -->
+                        <div class="command-section">
+                            <h3 class="command-title">❌ Cancelling Events</h3>
+                            <div class="command-list">
+                                <div class="command-item">
+                                    <span class="command-text">"Cancel my meeting on March 15th at 2 PM"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Delete my event tomorrow at 10 AM"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Remove the 3 PM call next Wednesday"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Cancel my next meeting"</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View Commands -->
+                        <div class="command-section">
+                            <h3 class="command-title">📋 Viewing Events</h3>
+                            <div class="command-list">
+                                <div class="command-item">
+                                    <span class="command-text">"Show me upcoming events"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"What meetings do I have tomorrow?"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Display next week's schedule"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"List my calendar events"</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sharing Commands -->
+                        <div class="command-section">
+                            <h3 class="command-title">👥 Sharing Calendar</h3>
+                            <div class="command-list">
+                                <div class="command-item">
+                                    <span class="command-text">"Share my calendar"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"How do I share my calendar?"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Show calendar sharing instructions"</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Help Commands -->
+                        <div class="command-section">
+                            <h3 class="command-title">ℹ️ Help & Info</h3>
+                            <div class="command-list">
+                                <div class="command-item">
+                                    <span class="command-text">"What can I do?"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Help"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"How do I use this?"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Exit" or "Quit"</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuration Commands -->
+                        <div class="command-section">
+                            <h3 class="command-title">⚙️ Configuration</h3>
+                            <div class="command-list">
+                                <div class="command-item">
+                                    <span class="command-text">"Configure settings"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Change my timezone"</span>
+                                </div>
+                                <div class="command-item">
+                                    <span class="command-text">"Update my preferences"</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 16px; background: rgba(66, 165, 245, 0.1); border-left: 4px solid #42a5f5; border-radius: 4px;">
+                        <h4 style="color: #42a5f5; margin-bottom: 10px;">💡 Tips for Best Results</h4>
+                        <ul style="color: #b3e5fc; font-size: 14px; line-height: 1.8;">
+                            <li>Speak clearly and naturally</li>
+                            <li>Use common date formats like "tomorrow", "next week", "March 15th"</li>
+                            <li>Time formats like "2 PM", "14:00", "2:00" all work</li>
+                            <li>Be specific with event details for best results</li>
+                            <li>The system understands informal language</li>
+                        </ul>
+                    </div>
                 </div>
             </section>
         </main>

@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-A powerful hands-free calendar management system powered by voice commands and AI-driven scheduling. Book, cancel, and manage code clinic sessions using natural language voice input.
+A powerful hands-free calendar management system powered by voice commands and AI-driven scheduling. Book, cancel, and manage meetings using natural language voice input.
 
 ## ✨ Features
 
@@ -15,10 +15,10 @@ A powerful hands-free calendar management system powered by voice commands and A
 - **Hands-Free Operation**: Control your calendar without typing
 
 ### 📅 Calendar Management
-- **Book Code Clinic Slots**: Reserve time with volunteers for academic support
+- **Book Meetings**: Reserve time for meetings and events
 - **Cancel Bookings**: Remove reservations using voice commands
 - **View Events**: Check your upcoming calendar events
-- **Calendar Sharing**: Share your calendar with the Code Clinics system
+- **Smart Reminders**: Get notified about your important events
 
 ### 🛡️ Reliability
 - **Error Handling**: Graceful fallback to text input if voice unavailable
@@ -74,17 +74,17 @@ python code_clinics_demo.py
 
 ## 📋 Voice Commands
 
-### 1. Book a Code Clinic Slot
+### 1. Book a Meeting
 ```
-"Book a slot on 2024-03-01 at 10:00 for Python help"
-"Schedule a session at 2:30 PM for algorithms"
-"I want to book a clinic for data structures"
+"Book a meeting on 2024-03-01 at 10:00 for project discussion"
+"Schedule a session at 2:30 PM for team sync"
+"I want to book a slot for code review"
 ```
 **Parameters extracted**: Date, Time, Topic
 
-### 2. Cancel a Booking
+### 2. Cancel a Meeting
 ```
-"Cancel my booking on 2024-03-01 at 10:00"
+"Cancel my meeting on 2024-03-01 at 10:00"
 "Unbook my appointment"
 ```
 **Parameters extracted**: Date, Time
@@ -95,19 +95,13 @@ python code_clinics_demo.py
 "List my calendar events"
 ```
 
-### 4. View Code Clinics Calendar
-```
-"View code clinics calendar"
-"Show available clinic slots"
-```
-
-### 5. Share Calendar
+### 4. Share Calendar
 ```
 "Share my calendar"
 "How do I share my calendar?"
 ```
 
-### 6. Help
+### 5. Help
 ```
 "Help"
 "What can I do?"

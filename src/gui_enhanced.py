@@ -1,4 +1,4 @@
-﻿"""
+"""
 Enhanced GUI Dashboard for Voice Assistant Calendar
 A colorful, user-friendly interface for booking and managing calendar events.
 """
@@ -42,8 +42,56 @@ class AppSettings:
     def __init__(self):
         """Initialize settings from config file."""
         self.settings_file = os.path.join(os.getcwd(), '.config', 'gui_settings.json')
-        # Create main window for the GUI. Avoid wildcard imports inside functions/methods.
-        # Wildcard imports are only allowed at module level and caused the import-time error.
+        self.defaults = {
+            'timezone': 'Africa/Johannesburg',
+            'default_event_duration': 30,
+            'last_calendar_id': 'primary'
+        }
+        self.settings = self.load()
+    
+    def load(self):
+        """Load settings from JSON file."""
+        try:
+            if os.path.exists(self.settings_file):
+                with open(self.settings_file, 'r') as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return self.defaults.copy()
+    
+    def save(self):
+        """Save settings to JSON file."""
+        try:
+            os.makedirs(os.path.dirname(self.settings_file), exist_ok=True)
+            with open(self.settings_file, 'w') as f:
+                json.dump(self.settings, f, indent=2)
+        except Exception:
+            pass
+    
+    def get(self, key, default=None):
+        """Get a setting value."""
+        return self.settings.get(key, default if default is not None else self.defaults.get(key))
+    
+    def set(self, key, value):
+        """Set a setting value and save."""
+        self.settings[key] = value
+        self.save()
+
+
+class VoiceAssistantGUI:
+    """Enhanced GUI for the Voice Assistant Calendar application."""
+    
+    def __init__(self, service, user_role="user"):
+        """
+        Initialize the GUI.
+        
+        Parameters:
+        - service: Authenticated Google Calendar service
+        - user_role: Role of the user (user/admin)
+        """
+        self.service = service
+        self.user_role = user_role
+        self.app_settings = AppSettings()
         self.window = tk.Tk()
         self.window.title("Voice Assistant Calendar")
         self.window.geometry("900x700")
@@ -60,43 +108,6 @@ class AppSettings:
         
         self.setup_styles()
         self.create_widgets()
-        # Simple settings persistence helpers and compatibility alias so
-        # other methods that reference `self.app_settings` continue to work.
-        self.app_settings = self
-
-    # --- Settings persistence helpers ---
-    def get(self, key, default=None):
-        """Get a setting value from the JSON settings file.
-
-        Returns default when the file/entry is missing.
-        """
-        try:
-            if os.path.exists(self.settings_file):
-                with open(self.settings_file, 'r', encoding='utf-8') as fh:
-                    data = json.load(fh)
-                    return data.get(key, default)
-        except Exception:
-            pass
-        return default
-
-    def set(self, key, value):
-        """Set a setting value and persist it to the JSON settings file."""
-        try:
-            data = {}
-            if os.path.exists(self.settings_file):
-                with open(self.settings_file, 'r', encoding='utf-8') as fh:
-                    try:
-                        data = json.load(fh)
-                    except Exception:
-                        data = {}
-
-            data[key] = value
-            os.makedirs(os.path.dirname(self.settings_file), exist_ok=True)
-            with open(self.settings_file, 'w', encoding='utf-8') as fh:
-                json.dump(data, fh, indent=2)
-        except Exception:
-            # Do not crash the GUI for settings persistence failures
-            pass
         
     def setup_styles(self):
         """Configure ttk styles for a modern look."""
@@ -119,7 +130,7 @@ class AppSettings:
                        font=('Helvetica', 11, 'bold'),
                        padding=10,
                        background=self.error_color)
-        
+
     def create_widgets(self):
         """Create and layout all GUI widgets."""
         # Header
@@ -199,15 +210,15 @@ class AppSettings:
         )
         self.signout_btn.pack(pady=(6,0))
         self.signout_btn.config(state=tk.DISABLED)
-        
+
         # Main content
         content_frame = tk.Frame(self.window, bg=self.bg_color)
         content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
+
         # Buttons grid
         button_frame = tk.Frame(content_frame, bg=self.bg_color)
         button_frame.pack(fill=tk.X, pady=20)
-        
+
         buttons = [
             ("📅 Book Event", self.book_event, self.primary_color),
             ("➕ Add Event", self.add_event_quick, "#1976d2"),
@@ -218,7 +229,7 @@ class AppSettings:
             ("🤖 AI Chat", self.chat_with_ai, "#00bcd4"),
             ("💡 Suggest & Book", self.suggest_and_book, "#ffc107"),
         ]
-        
+
         for i, (label, command, color) in enumerate(buttons):
             btn = tk.Button(
                 button_frame,
@@ -234,14 +245,14 @@ class AppSettings:
                 activebackground=self.secondary_color
             )
             btn.grid(row=0, column=i, padx=10, sticky="ew")
-        
+
         button_frame.columnconfigure(0, weight=1)
         button_frame.columnconfigure(1, weight=1)
         button_frame.columnconfigure(2, weight=1)
         button_frame.columnconfigure(3, weight=1)
         button_frame.columnconfigure(4, weight=1)
         button_frame.columnconfigure(5, weight=1)
-        
+
         # Event info display
         self.info_frame = tk.Frame(content_frame, bg=self.primary_color, relief=tk.RIDGE, bd=2)
         self.info_frame.pack(fill=tk.BOTH, expand=True, pady=20)
@@ -277,7 +288,7 @@ class AppSettings:
             fg="#b3e5fc"
         )
         footer_text.pack(pady=12)
-        
+
     def book_event(self):
         """Open booking dialog."""
         dialog = BookingDialog(self.window, self.service)
@@ -430,7 +441,7 @@ class AppSettings:
         
         except Exception as e:
             self.display_message(f"❌ Voice error: {str(e)}", "error")
-
+    
     def chat_with_ai(self):
         """Open an AI chat window powered by ChatGPT (if available)."""
         if not CHATGPT_AVAILABLE:

@@ -50,19 +50,6 @@ class TestVoiceCommandParser:
             command, params = VoiceCommandParser.parse_command(text)
             assert command == 'events', f"Failed to recognize events command in: {text}"
     
-    def test_code_clinics_command_parsing(self):
-        """Test code clinics calendar command recognition."""
-        test_cases = [
-            "Show me code clinics",
-            "View code clinics calendar",
-            "List code clinic slots",
-            "Code clinic events",
-        ]
-        
-        for text in test_cases:
-            command, params = VoiceCommandParser.parse_command(text)
-            assert command == 'code-clinics', f"Failed to recognize code-clinics command in: {text}"
-    
     def test_help_command_parsing(self):
         """Test help command recognition."""
         test_cases = [

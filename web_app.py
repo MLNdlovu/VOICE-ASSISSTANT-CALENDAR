@@ -74,18 +74,27 @@ def login_required(f):
 
 @app.route('/')
 def index():
-    """Home page - redirect to dashboard if logged in, else login."""
+    """Home page - redirect to dashboard if logged in, else login page."""
     if 'access_token' in session:
         return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return render_template('login.html')
 
 
 @app.route('/login')
 def login():
-    """Initiate Google OAuth login flow."""
-    if not CLIENT_SECRET_FILE:
-        return "Error: Client secret not configured", 500
+    """Show login page with OAuth button."""
+    if 'access_token' in session:
+        return redirect(url_for('dashboard'))
     
+    # If user clicked OAuth button, this handles it
+    if request.args.get('code'):
+        return oauth_callback()
+    
+    # Default: show login page (user clicks Google OAuth button there)
+    if not CLIENT_SECRET_FILE:
+        return render_template('login.html', error="Client secret not configured")
+    
+    # User clicked the OAuth button - initiate OAuth flow
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRET_FILE,
         scopes=SCOPES,
