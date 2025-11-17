@@ -459,13 +459,13 @@ class VoiceRecognizer:
     Converts audio to text using Google Speech Recognition API.
     """
     
-    def __init__(self, timeout: int = 5, phrase_time_limit: int = 6):
+    def __init__(self, timeout: int = 15, phrase_time_limit: int = 15):
         """
         Initialize the voice recognizer.
         
         Parameters:
-        - timeout: How long to wait before stopping listening (seconds).
-        - phrase_time_limit: Maximum length of a phrase to recognize (seconds).
+        - timeout: How long to wait before stopping listening (seconds). Default: 15 for longer booking commands.
+        - phrase_time_limit: Maximum length of a phrase to recognize (seconds). Default: 15 for detailed voice input.
         """
         self.timeout = timeout
         self.phrase_time_limit = phrase_time_limit

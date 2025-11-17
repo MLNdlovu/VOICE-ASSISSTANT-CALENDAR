@@ -4,6 +4,7 @@ import json
 from prettytable import PrettyTable
 import view
 from googleapiclient.errors import HttpError
+import os
 
 # Note: book_as_student has been removed. Use create_event_user instead for generic calendar events.
 
@@ -358,3 +359,6 @@ def cancel_event_by_start(service, calendar_id='primary', start_time_iso=None, s
     except Exception as e:
         print(f"Error cancelling event: {e}")
         return False
+
+if os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEV_ALLOW_INSECURE') == '1':
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Code Clinics calendar application now includes voice command integration using the SpeechRecognition library. This allows users to control the application using natural language voice commands.
+The Voice Assistant Calendar application now includes client-side voice command integration using the Web Speech API for browsers (SpeechRecognition + speechSynthesis) and the `SpeechRecognition`/`pyttsx3` stack for local/CLI usage. This enables users — including visually impaired users — to control the app with natural language and receive spoken feedback from the browser or the local CLI.
 
 ## Features
 
@@ -39,12 +39,12 @@ Extracts: date and time
 "What are my events?"
 ```
 
-#### 4. **View Code Clinics Calendar**
+#### 4. **View Calendar**
 ```
-"Show me code clinics"
-"View code clinics calendar"
-"List code clinic slots"
-"Show code clinic events"
+"Show me the calendar"
+"Open my calendar"
+"List my upcoming events"
+"Show calendar events"
 ```
 
 #### 5. **Share Calendar**
@@ -134,7 +134,7 @@ Voice recognition available: True
 ### Running the Application with Voice Support
 
 ```bash
-python code_clinics_demo.py
+python voice_assistant_calendar.py
 ```
 
 ### Interactive Input Selection
@@ -154,7 +154,7 @@ Type 'voice' or 'text' (default: text):
 
 **1. Start the application:**
 ```bash
-python code_clinics_demo.py
+python voice_assistant_calendar.py
 ```
 
 **2. Choose voice input:**
@@ -186,7 +186,7 @@ Main voice integration module with three key components:
 
 #### 1. **VoiceRecognizer Class**
 ```python
-recognizer = VoiceRecognizer(timeout=5, phrase_time_limit=6)
+recognizer = VoiceRecognizer(timeout=15, phrase_time_limit=15)
 text = recognizer.listen()
 ```
 

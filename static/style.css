@@ -17,6 +17,33 @@
     --text-color: #ffffff;
     --text-secondary: #b3e5fc;
     --border-color: #404040;
+    --focus-color: #42a5f5;
+}
+
+/* Accessibility: Skip to main content link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Focus visible for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
 }
 
 body {
@@ -485,3 +512,92 @@ body {
         padding: 12px;
     }
 }
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+}
+
+.toast {
+    background-color: #2a2a2a;
+    border-left: 4px solid var(--secondary-color);
+    color: var(--text-color);
+    padding: 16px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.3s ease-in-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toast.success {
+    border-left-color: var(--success-color);
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.toast.error {
+    border-left-color: var(--error-color);
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+.toast.warning {
+    border-left-color: var(--accent-color);
+    background-color: rgba(255, 111, 0, 0.1);
+}
+
+.toast.info {
+    border-left-color: var(--secondary-color);
+    background-color: rgba(66, 165, 245, 0.1);
+}
+
+.toast-message {
+    flex: 1;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 12px;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.toast-close:hover {
+    color: var(--text-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.toast.hide {
+    animation: slideOut 0.3s ease-in-out forwards;
+}
+

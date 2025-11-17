@@ -69,7 +69,7 @@ Comprehensive test suite covering:
 
 ## 🔄 Modified Files
 
-### **code_clinics_demo.py** - Integration with Main Application
+   ### **web_app.py** - Integration with Main Application (web server)
 **Changes**:
 - ✅ Added `voice_handler` module import
 - ✅ Added `Tuple` type import for type hints
@@ -404,7 +404,7 @@ python voice_examples.py
 
 1. **Test the Implementation**
    ```bash
-   python code_clinics_demo.py
+   python web_app.py
    ```
 
 2. **Run Tests**

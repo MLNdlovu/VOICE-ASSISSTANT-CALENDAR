@@ -26,7 +26,7 @@
 | Document | Purpose |
 |----------|---------|
 | [voice_handler.py](./voice_handler.py) | Source code with docstrings |
-| [code_clinics_demo.py](./code_clinics_demo.py) | Main application |
+| [web_app.py](./web_app.py) | Web application (run `python web_app.py`) |
 | [tests/test_voice_commands.py](./tests/test_voice_commands.py) | Test suite |
 | [requirements-voice.txt](./requirements-voice.txt) | Dependencies |
 

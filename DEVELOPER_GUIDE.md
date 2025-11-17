@@ -291,7 +291,7 @@ pip install SpeechRecognition
 1. Clone repository
 2. Install dependencies: `pip install -r requirements-voice.txt`
 3. Set up Google Calendar API credentials
-4. Run: `python code_clinics_demo.py`
+4. Run: `python web_app.py`
 
 ### Docker Support (Optional)
 ```dockerfile

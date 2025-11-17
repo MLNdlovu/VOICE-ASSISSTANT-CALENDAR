@@ -1,68 +1,24 @@
-﻿"""
-Enhanced GUI Dashboard for Voice Assistant Calendar
-A colorful, user-friendly interface for booking and managing calendar events.
+﻿"""Deprecated GUI module (archived).
+
+This repository is intentionally web-first. The original Tkinter GUI
+has been archived. Callers should run the web server using `python
+web_app.py` and use the browser-based dashboard. This module remains
+as a lightweight stub to avoid import errors in other modules.
 """
 
-import threading
-import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog, filedialog
-from tkcalendar import Calendar
-import datetime
-import json
-from dateutil import parser as date_parser
-import book
-import get_details
-import voice_handler
+def launch_dashboard(*args, **kwargs):
+    """Inform callers that the GUI is archived.
 
-# Google OAuth and API
-import os
-import requests
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-
-# Scopes required for calendar access and basic user info
-SCOPES = [
-    'openid',
-    'email',
-    'profile',
-    'https://www.googleapis.com/auth/calendar'
-]
-
-# Optional ChatGPT support
-try:
-    from ai_chatgpt import initialize_chatbot
-    CHATGPT_AVAILABLE = True
-except ImportError:
-    CHATGPT_AVAILABLE = False
+    Raises a RuntimeError with instructions to run the web server.
+    """
+    raise RuntimeError("GUI archived: run `python web_app.py` and open http://localhost:5000")
 
 
 class AppSettings:
-    """Manages application settings persistence."""
-    
-    def __init__(self):
-        """Initialize settings from config file."""
-        self.settings_file = os.path.join(os.getcwd(), '.config', 'gui_settings.json')
-        # Create main window for the GUI. Avoid wildcard imports inside functions/methods.
-        # Wildcard imports are only allowed at module level and caused the import-time error.
-        self.window = tk.Tk()
-        self.window.title("Voice Assistant Calendar")
-        self.window.geometry("900x700")
-        self.window.configure(bg="#1e1e1e")
-        
-        # Color scheme
-        self.primary_color = "#0d47a1"
-        self.secondary_color = "#42a5f5"
-        self.accent_color = "#ff6f00"
-        self.success_color = "#4caf50"
-        self.error_color = "#f44336"
-        self.bg_color = "#1e1e1e"
-        self.text_color = "#ffffff"
-        
-        self.setup_styles()
-        self.create_widgets()
-        # Simple settings persistence helpers and compatibility alias so
-        # other methods that reference `self.app_settings` continue to work.
-        self.app_settings = self
+    """Stub AppSettings that prevents launching GUI."""
+
+    def __init__(self, *args, **kwargs):
+        raise RuntimeError("GUI archived: use the web dashboard (web_app.py)")
 
     # --- Settings persistence helpers ---
     def get(self, key, default=None):

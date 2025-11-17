@@ -153,7 +153,7 @@ pip install SpeechRecognition
 
 ## 🚀 Next Steps
 
-1. Run the application: `python code_clinics_demo.py`
+1. Run the application: `python web_app.py`
 2. Try a few voice commands
 3. Refer to `VOICE_INTEGRATION_GUIDE.md` for advanced usage
 4. Run tests: `pytest tests/test_voice_commands.py`

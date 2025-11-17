@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Voice Assistant Calendar - A web-based calendar application with voice commands, accessible to visually impaired users">
     <title>Voice Assistant Calendar - Web Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
+        <!-- Skip to main content link for accessibility -->
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+
         <!-- Header -->
-        <header class="header">
+        <header class="header" role="banner">
             <div class="header-content">
                 <h1>🗓️ Voice Assistant Calendar</h1>
                 <div class="header-right">
-                    <span id="user-email" class="user-email">{{ user_email }}</span>
-                    <a href="/logout" class="btn btn-logout">Sign Out</a>
+                    <span id="user-email" class="user-email" aria-label="Current user">{{ user_email }}</span>
+                    <a href="/logout" class="btn btn-logout" aria-label="Sign out from account">Sign Out</a>
                 </div>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="main-content" id="main-content" role="main">
             <!-- Sidebar Navigation -->
-            <aside class="sidebar">
+            <aside class="sidebar" role="navigation" aria-label="Main navigation">
                 <nav class="nav-menu">
-                    <button class="nav-btn active" data-tab="voice">
+                    <button class="nav-btn active" data-tab="voice" aria-selected="true" aria-controls="voice-tab">
                         🎤 Voice Commands
                     </button>
-                    <button class="nav-btn" data-tab="events">
+                    <button class="nav-btn" data-tab="events" aria-selected="false" aria-controls="events-tab">
                         📅 My Events
                     </button>
                     <button class="nav-btn" data-tab="book">
@@ -47,24 +51,33 @@
                 <!-- Voice Commands Tab -->
                 <div class="tab-content active" id="voice-tab">
                     <h2>🎤 Voice Commands</h2>
-                    <p style="margin-bottom: 20px; color: #b3e5fc;">Click the microphone button to speak a command or type text to execute voice commands.</p>
+                    <p style="margin-bottom: 20px; color: #b3e5fc;">Click the microphone button to speak a command or type text to execute voice commands. Press Enter to execute typed commands.</p>
                     
                     <div class="voice-input-section">
                         <div class="voice-controls">
-                            <button id="voice-record-btn" class="btn btn-primary" onclick="startVoiceInput()">
+                            <button id="voice-record-btn" class="btn btn-primary" onclick="startVoiceInput()" aria-label="Start voice recording">
                                 🎤 Start Recording
                             </button>
-                            <button id="voice-stop-btn" class="btn btn-danger" onclick="stopVoiceInput()" style="display: none;">
+                            <button id="voice-stop-btn" class="btn btn-danger" onclick="stopVoiceInput()" style="display: none;" aria-label="Stop voice recording">
                                 ⏹️ Stop Recording
                             </button>
                         </div>
                         
                         <div class="voice-input-box">
-                            <input type="text" id="voice-text-input" placeholder="Or type a command here..." style="width: 100%; padding: 12px; border: 2px solid #42a5f5; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
-                            <button onclick="executeVoiceCommand()" class="btn btn-primary" style="width: 100%;">Execute Command</button>
+                            <input type="text" id="voice-text-input" placeholder="Or type a command here..." style="width: 100%; padding: 12px; border: 2px solid #42a5f5; border-radius: 6px; font-size: 14px; margin-bottom: 10px;" aria-label="Voice command input" aria-describedby="voice-hint">
+                            <small id="voice-hint" style="color: #b3e5fc; display: block; margin-bottom: 10px;">Tip: Press Enter to execute, or click the Execute button below</small>
+                            <button onclick="executeVoiceCommand()" class="btn btn-primary" style="width: 100%;" aria-label="Execute the voice command">Execute Command</button>
                         </div>
                         
-                        <div id="voice-response" style="margin-top: 20px;"></div>
+                        <div id="voice-response" style="margin-top: 20px;" role="status" aria-live="polite"></div>
+                    </div>
+
+                    <!-- Command History -->
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #404040;">
+                        <h3 style="margin-bottom: 15px;">📜 Recent Commands</h3>
+                        <div id="command-history" role="region" aria-label="Command history" style="background: rgba(26, 26, 26, 0.8); border-radius: 6px; padding: 15px;">
+                            <p style="color: #b3e5fc; text-align: center;">No command history yet</p>
+                        </div>
                     </div>
                 </div>
 

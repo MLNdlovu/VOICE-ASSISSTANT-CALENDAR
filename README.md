@@ -63,7 +63,7 @@ pip install pyaudio
 
 ```bash
 # Run the application
-python code_clinics_demo.py
+python web_app.py
 
 # When prompted, choose:
 # Type 'voice' or 'text' (default: text): voice

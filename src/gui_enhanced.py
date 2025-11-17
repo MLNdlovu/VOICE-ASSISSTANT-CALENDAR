@@ -1,53 +1,16 @@
+"""Archived GUI module (src/gui_enhanced.py).
+
+The GUI is deprecated in favor of the web dashboard (`web_app.py`).
+This module now contains a minimal stub to avoid import-time errors.
 """
-Enhanced GUI Dashboard for Voice Assistant Calendar
-A colorful, user-friendly interface for booking and managing calendar events.
-"""
 
-import threading
-import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog, filedialog
-from tkcalendar import Calendar
-import datetime
-import json
-from dateutil import parser as date_parser
-import book
-import get_details
-import voice_handler
-
-# Google OAuth and API
-import os
-import requests
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-
-# Scopes required for calendar access and basic user info
-SCOPES = [
-    'openid',
-    'email',
-    'profile',
-    'https://www.googleapis.com/auth/calendar'
-]
-
-# Optional ChatGPT support
-try:
-    from ai_chatgpt import initialize_chatbot
-    CHATGPT_AVAILABLE = True
-except ImportError:
-    CHATGPT_AVAILABLE = False
+def launch_dashboard(*args, **kwargs):
+    raise RuntimeError("Archived GUI: run `python web_app.py` and open http://localhost:5000")
 
 
 class AppSettings:
-    """Manages application settings persistence."""
-    
-    def __init__(self):
-        """Initialize settings from config file."""
-        self.settings_file = os.path.join(os.getcwd(), '.config', 'gui_settings.json')
-        self.defaults = {
-            'timezone': 'Africa/Johannesburg',
-            'default_event_duration': 30,
-            'last_calendar_id': 'primary'
-        }
-        self.settings = self.load()
+    def __init__(self, *args, **kwargs):
+        raise RuntimeError("Archived GUI: use the web dashboard (web_app.py)")
     
     def load(self):
         """Load settings from JSON file."""

@@ -16,6 +16,10 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+# IMPORTANT: Allow insecure transport (http) for local development
+# In production, ALWAYS use HTTPS
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 # Import existing modules
 import book
 import get_details
@@ -239,7 +243,9 @@ def book_event():
         )
         
         if created:
-            return jsonify({'success': True, 'event_id': created})
+            # Provide spoken feedback for accessibility when used via the web UI
+            speak_text = f'Event booked successfully: {summary} on {parsed_date} at {time}'
+            return jsonify({'success': True, 'event_id': created, 'message': f'✅ Event booked: {summary} on {parsed_date} at {time}', 'speak': True, 'speak_text': speak_text})
         else:
             return jsonify({'error': 'Failed to create event'}), 500
     
@@ -360,14 +366,18 @@ def voice_command():
             )
             
             if created:
+                speak_text = f'Meeting booked successfully. {summary} on {date} at {time}'
                 return jsonify({
                     'success': True,
                     'command': command,
                     'message': f'✅ Event booked: {summary} on {date} at {time}',
-                    'event_id': created
+                    'event_id': created,
+                    'speak': True,
+                    'speak_text': speak_text
                 })
             else:
-                return jsonify({'error': 'Failed to create event', 'command': command}), 500
+                speak_text = 'Failed to create event. Please try again.'
+                return jsonify({'error': 'Failed to create event', 'command': command, 'speak': True, 'speak_text': speak_text}), 500
         
         elif command == 'cancel-book':
             # Cancel an event
@@ -385,13 +395,17 @@ def voice_command():
             cancelled = book.cancel_event_by_start(service, calendar_id='primary', start_time_iso=start_iso)
             
             if cancelled:
+                speak_text = f'Event cancelled successfully on {date} at {time}'
                 return jsonify({
                     'success': True,
                     'command': command,
-                    'message': f'✅ Event cancelled on {date} at {time}'
+                    'message': f'✅ Event cancelled on {date} at {time}',
+                    'speak': True,
+                    'speak_text': speak_text
                 })
             else:
-                return jsonify({'error': 'Event not found', 'command': command}), 404
+                speak_text = 'Event not found. Please check the date and time.'
+                return jsonify({'error': 'Event not found', 'command': command, 'speak': True, 'speak_text': speak_text}), 404
         
         elif command == 'events':
             # Show upcoming events
@@ -409,39 +423,58 @@ def voice_command():
             ).execute()
             
             events = events_result.get('items', [])
+            event_count = len(events)
+            speak_text = f'You have {event_count} upcoming events. '
+            if events:
+                speak_text += f'First event: {events[0].get("summary", "Untitled")}'
+            else:
+                speak_text += 'No events scheduled'
+            
             return jsonify({
                 'success': True,
                 'command': command,
                 'events': events,
-                'message': f'You have {len(events)} upcoming events'
+                'message': f'You have {len(events)} upcoming events',
+                'speak': True,
+                'speak_text': speak_text
             })
         
         elif command == 'help':
             # Show available commands
+            speak_text = 'Available commands are: book a meeting, cancel a booking, view events, help, share calendar, and config. Say any of these commands to get started.'
             return jsonify({
                 'success': True,
                 'command': command,
-                'message': 'Available commands: book, cancel-book, events, help, share, config, exit'
+                'message': 'Available commands: book, cancel-book, events, help, share, config, exit',
+                'speak': True,
+                'speak_text': speak_text
             })
         
         elif command == 'share':
             # Calendar sharing instructions
+            speak_text = 'To share your calendar, go to Google Calendar settings, select your calendar, and add collaborator emails.'
             return jsonify({
                 'success': True,
                 'command': command,
-                'message': 'Share your calendar by opening Google Calendar settings and adding collaborators.'
+                'message': 'Share your calendar by opening Google Calendar settings and adding collaborators.',
+                'speak': True,
+                'speak_text': speak_text
             })
         
         else:
             # Unknown command
+            speak_text = f'Unknown command. Please try saying: book a meeting, cancel a booking, view events, get help, or share calendar'
             return jsonify({
                 'success': False,
                 'command': command,
-                'message': f'Unknown command: {voice_text}. Try "book", "cancel", "events", or "help"'
+                'message': f'Unknown command: {voice_text}. Try "book", "cancel", "events", or "help"',
+                'speak': True,
+                'speak_text': speak_text
             }), 400
     
     except Exception as e:
-        return jsonify({'error': str(e), 'type': 'exception'}), 500
+        speak_text = 'An error occurred. Please try again.'
+        return jsonify({'error': str(e), 'type': 'exception', 'speak': True, 'speak_text': speak_text}), 500
 
 
 if __name__ == '__main__':

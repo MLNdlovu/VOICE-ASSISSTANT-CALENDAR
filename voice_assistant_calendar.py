@@ -68,7 +68,7 @@ def authenticate():
                 print("Refreshing token...")
                 creds.refresh(Request())
             else:
-                client_secret_path = os.path.join(os.getcwd(), ".config", "client_secret_372600977962-5tmobjbt9nv752ajec6tvrigjlfd4lpo.apps.googleusercontent.com.json")
+                client_secret_path = os.path.join(os.getcwd(), ".config", "client_secret_521030747278-6tqlsfcbtv71c7r4p2q1j7m88du0l9h7.apps.googleusercontent.com.json")
                 flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
                 creds = flow.run_local_server(port=0)
 
@@ -159,8 +159,8 @@ def config_command(args):
     """   
 
     flow = InstalledAppFlow.from_client_secrets_file(
-os.getcwd()+"/.config/client_secret_372600977962-5tmobjbt9nv752ajec6tvrigjlfd4lpo.apps.googleusercontent.com.json",SCOPES
-)
+        os.getcwd()+"/.config/client_secret_372600977962-5tmobjbt9nv752ajec6tvrigjlfd4lpo.apps.googleusercontent.com.json", SCOPES
+    )
 
     try:
     # Run the local server and get the credentials
@@ -648,7 +648,21 @@ def main():
                 
                 # Create event in user's primary calendar (replaces book_as_student)
                 start_iso = f"{book_date}T{book_time}:00+02:00"
-                book.create_event_user(service, calendar_id='primary', email=user_name, start_time_iso=start_iso, summary=summary, duration_minutes=30, reminders=[10])
+                created = book.create_event_user(service, calendar_id='primary', email=user_name, start_time_iso=start_iso, summary=summary, duration_minutes=30, reminders=[10])
+                
+                if created:
+                    print(f"✅ Meeting booked successfully: {summary} on {book_date} at {book_time}")
+                    try:
+                        voice_handler.speak(f"Meeting booked successfully. {summary} on {book_date} at {book_time}")
+                    except Exception:
+                        pass
+                else:
+                    print("❌ Failed to create event")
+                    try:
+                        voice_handler.speak("Failed to create meeting. Please try again.")
+                    except Exception:
+                        pass
+                
                 load_voice_assistant_calendar(service)
             
             elif command == "cancel-book":
@@ -670,10 +684,18 @@ def main():
                 # First try to cancel in the user's primary calendar
                 cancelled_primary = book.cancel_event_by_start(service, calendar_id='primary', start_time_iso=start_datetime, summary=None)
                 if cancelled_primary:
-                    print("✅ Booking canceled in your calendar.")
+                    print(f"✅ Meeting cancelled successfully: {start_date} at {start_time}")
+                    try:
+                        voice_handler.speak(f"Meeting cancelled successfully on {start_date} at {start_time}")
+                    except Exception:
+                        pass
                 else:
                     # Fallback to code clinics cancellation
                     book.cancel_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
+                    try:
+                        voice_handler.speak("Meeting cancelled")
+                    except Exception:
+                        pass
 
             elif command == 'reschedule':
                 # Reschedule an event: cancel old and create new
@@ -721,4 +743,9 @@ def main():
             print("Please try again.")
             
 if __name__ == "__main__":
-        main()
+    # This repository now runs as a web application only.
+    # The CLI/GUI entrypoint has been deprecated to avoid duplicate interfaces.
+    print("Voice Assistant Calendar: CLI entrypoint is deprecated.")
+    print("Run the web server instead: python web_app.py")
+    print("Then open http://localhost:5000 in your browser.")
+    sys.exit(0)
