@@ -9,6 +9,16 @@
 </head>
 <body>
     <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-icon">🗓️</div>
+                <div>
+                    <h1 class="hero-title">Welcome to Your Voice Assistant Calendar</h1>
+                    <p class="hero-subtitle">Manage your schedule with voice, text, and a beautiful dashboard. Try saying "Book a meeting for tomorrow at 3pm and call it movie date"!</p>
+                </div>
+            </div>
+        </section>
         <!-- Skip to main content link for accessibility -->
         <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -79,6 +89,8 @@
                             <p style="color: #b3e5fc; text-align: center;">No command history yet</p>
                         </div>
                     </div>
+                    <!-- Floating Action Button for Quick Booking -->
+                    <button class="fab" onclick="document.querySelector('[data-tab=book]').click();" aria-label="Quick Book Event">➕</button>
                 </div>
 
                 <!-- Events Tab -->

@@ -21,6 +21,8 @@ from googleapiclient.errors import HttpError
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # Import existing modules
+import sys
+sys.path.insert(0, './src')
 import book
 import get_details
 import voice_handler
@@ -340,7 +342,45 @@ def voice_command():
         command, params = VoiceCommandParser.parse_command(voice_text)
         
         # Process the command
-        if command == 'book':
+        if command == 'events-for-day':
+            # List all events for a specific day (default today)
+            date = params.get('date')
+            if not date:
+                from datetime import datetime
+                date = datetime.now().strftime('%Y-%m-%d')
+            service = get_calendar_service()
+            if not service:
+                return jsonify({'error': 'Not authenticated'}), 401
+            from datetime import datetime, timedelta
+            # Get start and end of the day in ISO format
+            start_dt = datetime.strptime(date, '%Y-%m-%d')
+            end_dt = start_dt + timedelta(days=1)
+            start_iso = start_dt.isoformat() + 'T00:00:00+00:00' if 'T' not in date else date
+            end_iso = end_dt.isoformat() + 'T00:00:00+00:00'
+            events_result = service.events().list(
+                calendarId='primary',
+                timeMin=start_iso,
+                timeMax=end_iso,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            events = events_result.get('items', [])
+            if events:
+                event_list = ', '.join([e.get('summary', 'Untitled') + ' at ' + e['start'].get('dateTime', e['start'].get('date', ''))[11:16] for e in events])
+                speak_text = f'You have {len(events)} events for {date}. ' + event_list
+                message = f'Events for {date}: ' + event_list
+            else:
+                speak_text = f'You have no events for {date}.'
+                message = f'No events for {date}.'
+            return jsonify({
+                'success': True,
+                'command': command,
+                'events': events,
+                'message': message,
+                'speak': True,
+                'speak_text': speak_text
+            })
+        elif command == 'book':
             # Book an event
             email = params.get('email') or session.get('user_email')
             date = params.get('date')

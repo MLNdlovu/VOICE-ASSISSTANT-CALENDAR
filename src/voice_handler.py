@@ -112,6 +112,22 @@ class VoiceOutput:
 
 
 class VoiceCommandParser:
+    EVENTS_FOR_DAY_PATTERNS = [
+        r"what are my events for the day",
+        r"what are my events today",
+        r"show my events for the day",
+        r"show my events today",
+        r"list my events for the day",
+        r"list my events today",
+        r"events for the day",
+        r"events today",
+        r"meetings for the day",
+        r"meetings today",
+        r"appointments for the day",
+        r"appointments today",
+        r"what do i have (today|for the day)",
+        r"what's on my calendar (today|for the day)",
+    ]
     """
     Parses natural language voice commands and extracts relevant parameters.
     
@@ -357,25 +373,30 @@ class VoiceCommandParser:
     def extract_summary(text: str) -> Optional[str]:
         """
         Extracts the topic/summary from a booking command.
-        
+        Supports: 'for ...', 'about ...', 'and call it ...', 'called ...', or after 'book ... for ...'
         Example: "Book a slot for Python help" → "Python help"
+                 "Book a meeting for tomorrow at 3 pm and call it movie date" → "movie date"
         """
-        # Look for "for", "about", "on", "studying", etc.
-        patterns = [
-            r'(?:for|about|studying|help\s+with|learn)\s+(.+?)(?:\s+on\s+|\s+at\s+|$)',
-            r'(?:study|help|topic|subject)\s+(?:is|:)?\s*(.+?)(?:\s+on\s+|\s+at\s+|$)',
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                return match.group(1).strip()
-        
-        # Default: extract everything after "book" or similar
+        # 1. Look for 'and call it <summary>' or 'called <summary>'
+        match = re.search(r'(?:and\s+call\s+it|called)\s+([\w\s\-]+)', text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+
+        # 2. Look for 'for <summary>'
+        match = re.search(r'for\s+(.+?)(?:\s+on|\s+at|$)', text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+
+        # 3. Look for 'about <summary>'
+        match = re.search(r'about\s+(.+?)(?:\s+on|\s+at|$)', text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+
+        # 4. Default: extract everything after "book" or similar
         match = re.search(r'book.*?(?:for|studying|topic)?\s+(.+?)$', text, re.IGNORECASE)
         if match:
             return match.group(1).strip()
-        
+
         return None
     
     @staticmethod
@@ -393,6 +414,15 @@ class VoiceCommandParser:
         """
         text_lower = text.lower().strip()
         
+        # Check for 'events for the day' or similar
+        if VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.EVENTS_FOR_DAY_PATTERNS):
+            # Try to extract a date, default to today if not found
+            date_str, _ = VoiceCommandParser.extract_datetime(text)
+            if not date_str:
+                from datetime import datetime
+                date_str = datetime.now().strftime('%Y-%m-%d')
+            return 'events-for-day', {'date': date_str}
+
         # Determine command type
         if VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.BOOK_PATTERNS):
             date_str, time_str = VoiceCommandParser.extract_datetime(text)
@@ -500,13 +530,11 @@ class VoiceRecognizer:
         if not self.is_available():
             print("[ERROR] Voice recognition is not available.")
             return None
-        
         try:
             with self.microphone as source:
                 # Adapt to ambient noise
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
                 print(f"[VOICE] {prompt}")
-                
                 # Capture audio
                 try:
                     audio = self.recognizer.listen(
@@ -517,21 +545,17 @@ class VoiceRecognizer:
                 except sr.WaitTimeoutError:
                     print("[TIMEOUT] No speech detected (timeout).")
                     return None
-            
             # Recognize speech using Google Speech Recognition
             print("[INFO] Processing audio...")
             text = self.recognizer.recognize_google(audio)
             print(f"[SUCCESS] Heard: \"{text}\"")
             return text.strip().lower()
-        
         except sr.UnknownValueError:
             print("[ERROR] Sorry, could not understand audio. Please try again.")
             return None
-        
         except sr.RequestError as e:
             print(f"[ERROR] Speech recognition failed: {e}")
             return None
-        
         except Exception as e:
             print(f"[ERROR] Unexpected error: {e}")
             return None
