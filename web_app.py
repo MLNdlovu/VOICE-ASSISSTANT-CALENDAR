@@ -171,9 +171,20 @@ def dashboard():
 def serve_docs(filename):
     """Serve markdown docs from the local docs/ folder."""
     docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
-    if not os.path.exists(os.path.join(docs_dir, filename)):
+    path = os.path.join(docs_dir, filename)
+    if not os.path.exists(path):
         abort(404)
-    return send_from_directory(docs_dir, filename)
+
+    # If python-markdown is installed, render markdown to HTML for nicer display
+    try:
+        import markdown
+        with open(path, 'r', encoding='utf-8') as f:
+            md = f.read()
+        html = markdown.markdown(md, extensions=['fenced_code', 'tables'])
+        # Simple wrapper page
+        return f"<html><head><meta charset='utf-8'><title>{filename}</title><style>body{{background:#07132a;color:#eaf6ff;font-family:Segoe UI, Tahoma, Geneva, Verdana,sans-serif;padding:24px}} a{{color:#4fb0ff}}</style></head><body>{html}</body></html>"
+    except Exception:
+        return send_from_directory(docs_dir, filename)
 
 
 @app.route('/ai')
@@ -732,6 +743,52 @@ def ai_summarize():
     try:
         ai_response = bot.chat(prompt)
         return jsonify({'success': True, 'summary': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/followups', methods=['POST'])
+@login_required
+def ai_followups():
+    """Generate suggested follow-up emails or action items from notes/context."""
+    data = request.get_json() or {}
+    notes = data.get('notes', '')
+    title = data.get('title', 'Meeting')
+
+    if not notes:
+        return jsonify({'error': 'No notes provided'}), 400
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Based on these meeting notes for '{title}', suggest concise follow-up emails and next steps. Provide a short suggested email draft and a numbered list of next actions. Notes:\n\n{notes}"
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'followups': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/translate', methods=['POST'])
+@login_required
+def ai_translate():
+    """Translate provided text into a target language using AI."""
+    data = request.get_json() or {}
+    text = data.get('text', '')
+    target = data.get('target_language', 'en')
+
+    if not text:
+        return jsonify({'error': 'No text provided'}), 400
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Translate the following text to {target} while preserving meaning and formatting:\n\n{text}"
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'translation': ai_response})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

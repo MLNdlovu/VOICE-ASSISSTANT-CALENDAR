@@ -372,9 +372,11 @@ async function loadEvents() {
                     <button class="btn-cancel-event" onclick="cancelEvent('${event.id}')">🗑️ Cancel</button>
                     <button class="btn btn-ghost" onclick="openAiModalForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">🤖 Agenda</button>
                     <button class="btn btn-ghost" onclick="callAiActionsForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">📌 Actions</button>
+                    <button class="btn btn-ghost" onclick="callAiFollowupsForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">🔁 Follow-ups</button>
                     <button class="btn btn-ghost" onclick="openSummarizeModal('${event.id}')">📝 Summarize</button>
                     <button class="btn btn-ghost" onclick="callAiEmailForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">✉️ Draft Email</button>
                     <button class="btn btn-ghost" onclick="callAiSuggestTimesForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">⏰ Suggest Times</button>
+                    <button class="btn btn-ghost" onclick="exportEvent('${event.id}')">⬇️ Export</button>
                 </div>
             </div>
         `).join('');
@@ -423,10 +425,18 @@ async function callAiEmailForEvent(eventId, title) {
         const events = await resEvent.json();
         const ev = events.find(e => e.id === eventId) || {};
         const context = ev.description || '';
-        // For now, recipients empty
+        // Try to prefill recipients from organizer or attendees
+        let recipients = [];
+        if (ev.organizer && ev.organizer.email) recipients.push(ev.organizer.email);
+        if (ev.attendees && Array.isArray(ev.attendees)) {
+            ev.attendees.forEach(a => { if (a.email) recipients.push(a.email); });
+        }
+        // Deduplicate
+        recipients = Array.from(new Set(recipients));
+
         const res = await fetch(`${API_BASE}/ai/email`, {
             method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ title: title, recipients: [], context: context })
+            body: JSON.stringify({ title: title, recipients: recipients, context: context })
         });
         const data = await res.json();
         if (res.ok && data.success) {
@@ -467,6 +477,55 @@ async function callAiSuggestTimesForEvent(eventId, title) {
         const data = await res.json();
         if (res.ok && data.success) {
             document.getElementById('ai-response').innerText = data.suggestions;
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function callAiFollowupsForEvent(eventId, title) {
+    openAiModal();
+    document.getElementById('ai-input').value = title || '';
+    document.getElementById('ai-response').innerText = 'Generating follow-ups and suggested emails...';
+    try {
+        const resEvent = await fetch(`${API_BASE}/events`);
+        const events = await resEvent.json();
+        const ev = events.find(e => e.id === eventId) || {};
+        const notes = ev.description || '';
+
+        const res = await fetch(`${API_BASE}/ai/followups`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ title: title, notes: notes })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.followups;
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function callAiTranslate() {
+    const text = document.getElementById('ai-response').innerText || document.getElementById('ai-input').value || '';
+    if (!text) {
+        showToast('Nothing to translate', 'warning');
+        return;
+    }
+    const target = document.getElementById('ai-translate-lang')?.value || 'en';
+    document.getElementById('ai-response').innerText = 'Translating...';
+    try {
+        const res = await fetch(`${API_BASE}/ai/translate`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ text: text, target_language: target })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.translation;
         } else {
             document.getElementById('ai-response').innerText = data.error || 'AI error';
         }
@@ -687,6 +746,126 @@ async function cancelEvent(eventId) {
     }
 }
 
+// Export event as .ics file
+function formatDateToICS(dateString) {
+    const d = new Date(dateString);
+    // Ensure we have UTC format YYYYMMDDTHHMMSSZ
+    const YYYY = d.getUTCFullYear();
+    const MM = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const DD = String(d.getUTCDate()).padStart(2, '0');
+    const hh = String(d.getUTCHours()).padStart(2, '0');
+    const mm = String(d.getUTCMinutes()).padStart(2, '0');
+    const ss = String(d.getUTCSeconds()).padStart(2, '0');
+    return `${YYYY}${MM}${DD}T${hh}${mm}${ss}Z`;
+}
+
+async function exportEvent(eventId) {
+    try {
+        const res = await fetch(`${API_BASE}/events`);
+        if (!res.ok) throw new Error('Failed to load events');
+        const events = await res.json();
+        const ev = events.find(e => e.id === eventId);
+        if (!ev) throw new Error('Event not found');
+
+        const uid = ev.id || `${Date.now()}@voice-assistant`;
+        const dtstamp = formatDateToICS(new Date().toISOString());
+        const dtstart = formatDateToICS(ev.start || ev.start.dateTime || ev.start.date);
+        const dtend = formatDateToICS(ev.end || ev.end.dateTime || ev.end.date);
+        const summary = ev.summary || 'Untitled Event';
+        const description = (ev.description || '').replace(/\n/g, '\\n');
+        const location = ev.location || '';
+
+        const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Voice Assistant Calendar//EN',
+            'CALSCALE:GREGORIAN',
+            'BEGIN:VEVENT',
+            `UID:${uid}`,
+            `DTSTAMP:${dtstamp}`,
+            `DTSTART:${dtstart}`,
+            `DTEND:${dtend}`,
+            `SUMMARY:${summary.replace(/\r?\n/g, ' ')}`,
+            `DESCRIPTION:${description}`,
+            `LOCATION:${location}`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const filename = summary.replace(/[^a-z0-9\-\._ ]/ig, '').trim() || 'event';
+        a.href = url;
+        a.download = `${filename}.ics`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('✅ Event exported as .ics', 'success');
+    } catch (err) {
+        console.error('Export failed:', err);
+        showToast('❌ Export failed: ' + err.message, 'error');
+    }
+}
+
+// Export all loaded events as a single .ics file
+async function exportAllEvents() {
+    try {
+        const res = await fetch(`${API_BASE}/events`);
+        if (!res.ok) throw new Error('Failed to load events');
+        const events = await res.json();
+        if (!events || events.length === 0) {
+            showToast('No events to export', 'warning');
+            return;
+        }
+
+        const dtstamp = formatDateToICS(new Date().toISOString());
+        const lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Voice Assistant Calendar//EN',
+            'CALSCALE:GREGORIAN'
+        ];
+
+        events.forEach(ev => {
+            const uid = ev.id || `${Date.now()}-${Math.floor(Math.random()*1000)}@voice-assistant`;
+            const dtstart = formatDateToICS(ev.start || ev.start?.dateTime || ev.start?.date);
+            const dtend = formatDateToICS(ev.end || ev.end?.dateTime || ev.end?.date);
+            const summary = (ev.summary || 'Untitled Event').replace(/\r?\n/g, ' ');
+            const description = (ev.description || '').replace(/\n/g, '\\n');
+            const location = ev.location || '';
+
+            lines.push('BEGIN:VEVENT');
+            lines.push(`UID:${uid}`);
+            lines.push(`DTSTAMP:${dtstamp}`);
+            if (dtstart) lines.push(`DTSTART:${dtstart}`);
+            if (dtend) lines.push(`DTEND:${dtend}`);
+            lines.push(`SUMMARY:${summary}`);
+            if (description) lines.push(`DESCRIPTION:${description}`);
+            if (location) lines.push(`LOCATION:${location}`);
+            lines.push('END:VEVENT');
+        });
+
+        lines.push('END:VCALENDAR');
+
+        const ics = lines.join('\r\n');
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `events-${new Date().toISOString().slice(0,10)}.ics`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('✅ All events exported as .ics', 'success');
+    } catch (err) {
+        console.error('Export all failed:', err);
+        showToast('❌ Export all failed: ' + err.message, 'error');
+    }
+}
+
 // Book event form
 document.getElementById('booking-form')?.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -820,6 +999,56 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Theme handling: set, toggle, load from localStorage
+function setTheme(theme) {
+    if (!theme) return;
+    document.body.classList.remove('theme-light');
+    document.body.classList.remove('theme-dark');
+    if (theme === 'light') {
+        document.body.classList.add('theme-light');
+    } else {
+        // default dark
+        document.body.classList.add('theme-dark');
+    }
+    localStorage.setItem('vac_theme', theme);
+}
+
+function toggleTheme() {
+    const current = localStorage.getItem('vac_theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+}
+
+function loadTheme() {
+    const theme = localStorage.getItem('vac_theme') || 'dark';
+    setTheme(theme);
+}
+
+// Compact view toggle: adds .compact to event cards
+function applyCompactMode(enabled) {
+    const events = document.querySelectorAll('.event-card');
+    events.forEach(e => {
+        if (enabled) e.classList.add('compact'); else e.classList.remove('compact');
+    });
+}
+
+function toggleCompactView() {
+    const current = localStorage.getItem('vac_compact') === '1';
+    const next = !current;
+    localStorage.setItem('vac_compact', next ? '1' : '0');
+    applyCompactMode(next);
+    // update button state
+    const btn = document.getElementById('compact-toggle-btn');
+    if (btn) btn.classList.toggle('active', next);
+}
+
+function loadCompactView() {
+    const enabled = localStorage.getItem('vac_compact') === '1';
+    applyCompactMode(enabled);
+    const btn = document.getElementById('compact-toggle-btn');
+    if (btn) btn.classList.toggle('active', enabled);
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     // Set today's date as default
@@ -829,6 +1058,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load initial events
     loadEvents();
 
+    // Load theme and compact view preferences
+    loadTheme();
+    loadCompactView();
+
+    // Wire theme and compact buttons
+    document.getElementById('theme-toggle-btn')?.addEventListener('click', function() {
+        toggleTheme();
+    });
+    document.getElementById('compact-toggle-btn')?.addEventListener('click', function() {
+        toggleCompactView();
+    });
+    // Wire Export All button
+    document.getElementById('export-all-btn')?.addEventListener('click', function() {
+        exportAllEvents();
+    });
+    
+    // Wire translate button in modal (delegated via attribute)
+    // The button uses inline onclick="callAiTranslate()" in the template
     // Display command history on page load
     displayCommandHistory();
 

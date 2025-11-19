@@ -26,8 +26,11 @@
         <header class="header" role="banner">
             <div class="header-content">
                 <h1>🗓️ Voice Assistant Calendar</h1>
-                <div class="header-right">
+                    <div class="header-right">
                     <span id="user-email" class="user-email" aria-label="Current user">{{ user_email }}</span>
+                    <button id="theme-toggle-btn" class="btn btn-icon" title="Toggle theme" aria-label="Toggle theme">🌗</button>
+                    <button id="compact-toggle-btn" class="btn btn-ghost btn-small" title="Toggle compact view" aria-label="Toggle compact view">Compact</button>
+                    <button id="export-all-btn" class="btn btn-ghost" title="Export all events as .ics" aria-label="Export all events">Export All</button>
                     <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost" aria-label="View AI documentation" target="_blank">AI Docs</a>
                     <a href="/logout" class="btn btn-logout" aria-label="Sign out from account">Sign Out</a>
                 <!-- AI Save Confirmation Modal -->
@@ -87,9 +90,9 @@
                         <p>Ask the assistant to analyze your schedule, suggest meeting times, generate agendas, or draft emails.</p>
                     </div>
                     <div class="ai-card-right">
-                        <button class="btn btn-primary" type="button" onclick="openAiModal()">Open Assistant</button>
-                        <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost">See AI Features</a>
-                    </div>
+                                <button class="btn btn-primary" type="button" onclick="openAiModal()">Open Assistant</button>
+                                <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost">See AI Features</a>
+                            </div>
                 </div>
 
                 <!-- Voice Commands Tab -->
@@ -335,6 +338,17 @@
             <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
                 <button class="btn btn-ghost" onclick="callAiChat()">Ask</button>
                 <button class="btn btn-primary" onclick="callAiAgenda()">Generate Agenda</button>
+            </div>
+            <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                <label style="font-size:13px; color:var(--text-secondary);">Translate summary to:</label>
+                <select id="ai-translate-lang" style="background:transparent; border:1px solid rgba(255,255,255,0.04); color:inherit; padding:6px; border-radius:6px;">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="pt">Portuguese</option>
+                </select>
+                <button class="btn btn-ghost" onclick="callAiTranslate()">Translate</button>
             </div>
             <div id="ai-response" style="margin-top:16px; white-space:pre-wrap;"></div>
         </div>
