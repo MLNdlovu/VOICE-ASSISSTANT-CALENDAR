@@ -370,6 +370,8 @@ async function loadEvents() {
                 ${event.description ? `<div class="event-description">${escapeHtml(event.description)}</div>` : ''}
                 <div class="event-actions">
                     <button class="btn-cancel-event" onclick="cancelEvent('${event.id}')">🗑️ Cancel</button>
+                    <button class="btn btn-ghost" onclick="openAiModalForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">🤖 Agenda</button>
+                    <button class="btn btn-ghost" onclick="openSummarizeModal('${event.id}')">📝 Summarize</button>
                 </div>
             </div>
         `).join('');
