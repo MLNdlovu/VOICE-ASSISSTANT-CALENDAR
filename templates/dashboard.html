@@ -30,6 +30,27 @@
                     <span id="user-email" class="user-email" aria-label="Current user">{{ user_email }}</span>
                     <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost" aria-label="View AI documentation" target="_blank">AI Docs</a>
                     <a href="/logout" class="btn btn-logout" aria-label="Sign out from account">Sign Out</a>
+                <!-- AI Save Confirmation Modal -->
+                <div id="ai-confirm-modal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <button class="modal-close" onclick="closeAiConfirmModal()">✕</button>
+                        <h3>Save AI Output to Event</h3>
+                        <p style="color: var(--text-secondary);">Preview the content below and choose whether to append or overwrite the existing event description.</p>
+                        <div style="margin-top:8px;">
+                            <label style="font-weight:600;">Preview</label>
+                            <div id="ai-confirm-preview" style="white-space:pre-wrap; background: rgba(255,255,255,0.02); padding:12px; border-radius:8px; margin-top:8px; max-height:260px; overflow:auto; border:1px solid rgba(255,255,255,0.03);"></div>
+                        </div>
+                        <div style="margin-top:12px; display:flex; gap:12px; align-items:center;">
+                            <label style="font-weight:600; margin-right:8px;">Mode:</label>
+                            <label><input type="radio" name="ai-save-mode" value="overwrite" checked> Overwrite</label>
+                            <label><input type="radio" name="ai-save-mode" value="append"> Append</label>
+                        </div>
+                        <div style="margin-top:16px; display:flex; gap:8px; justify-content:flex-end;">
+                            <button class="btn btn-ghost" onclick="closeAiConfirmModal()">Cancel</button>
+                            <button id="ai-confirm-save" class="btn btn-primary">Save to Event</button>
+                        </div>
+                    </div>
+                </div>
                 </div>
             </div>
         </header>
@@ -66,7 +87,7 @@
                         <p>Ask the assistant to analyze your schedule, suggest meeting times, generate agendas, or draft emails.</p>
                     </div>
                     <div class="ai-card-right">
-                        <a href="/ai" class="btn btn-primary">Open Assistant</a>
+                        <button class="btn btn-primary" type="button" onclick="openAiModal()">Open Assistant</button>
                         <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost">See AI Features</a>
                     </div>
                 </div>
@@ -95,13 +116,7 @@
                         <div id="voice-response" style="margin-top: 20px;" role="status" aria-live="polite"></div>
                     </div>
 
-                    <!-- Command History -->
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #404040;">
-                        <h3 style="margin-bottom: 15px;">📜 Recent Commands</h3>
-                        <div id="command-history" role="region" aria-label="Command history" style="background: rgba(26, 26, 26, 0.8); border-radius: 6px; padding: 15px;">
-                            <p style="color: #b3e5fc; text-align: center;">No command history yet</p>
-                        </div>
-                    </div>
+                    <!-- Recent commands removed per user request -->
                     <!-- Floating Action Button for Quick Booking -->
                     <button class="fab" onclick="document.querySelector('[data-tab=book]').click();" aria-label="Quick Book Event">➕</button>
                 </div>

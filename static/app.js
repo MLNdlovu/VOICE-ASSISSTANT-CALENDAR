@@ -509,21 +509,8 @@ async function callAiSummarize() {
 
 async function saveAgendaToEvent(eventId, agendaText) {
     try {
-        // Optionally fetch existing description and append; for simplicity overwrite/replace
-        const body = { description: (agendaText || '') };
-        const res = await fetch(`${API_BASE}/events/${eventId}/description`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast('✅ Agenda saved to event', 'success');
-            closeAiModal();
-            loadEvents();
-        } else {
-            showToast('❌ Failed to save agenda: ' + (data.error || ''), 'error');
-        }
+        // Open confirmation modal to let the user choose append vs overwrite
+        openAiConfirmModal(eventId, agendaText);
     } catch (err) {
         showToast('❌ ' + err.message, 'error');
     }
@@ -531,23 +518,59 @@ async function saveAgendaToEvent(eventId, agendaText) {
 
 async function saveSummaryToEvent(eventId, summaryText) {
     try {
-        const body = { description: (summaryText || '') };
-        const res = await fetch(`${API_BASE}/events/${eventId}/description`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast('✅ Summary saved to event', 'success');
-            closeAiModal();
-            loadEvents();
-        } else {
-            showToast('❌ Failed to save summary: ' + (data.error || ''), 'error');
-        }
+        // Open confirmation modal to let the user choose append vs overwrite
+        openAiConfirmModal(eventId, summaryText);
     } catch (err) {
         showToast('❌ ' + err.message, 'error');
     }
+}
+
+// Confirmation modal helpers
+function openAiConfirmModal(eventId, content) {
+    const modal = document.getElementById('ai-confirm-modal');
+    const preview = document.getElementById('ai-confirm-preview');
+    modal.style.display = 'flex';
+    preview.innerText = content || '';
+    modal.dataset.eventId = eventId;
+    modal.dataset.content = content || '';
+
+    // Ensure save handler is attached once
+    const saveBtn = document.getElementById('ai-confirm-save');
+    const newHandler = async function() {
+        const mode = document.querySelector('input[name="ai-save-mode"]:checked').value || 'overwrite';
+        const body = { description: modal.dataset.content, mode: mode };
+        try {
+            const res = await fetch(`${API_BASE}/events/${modal.dataset.eventId}/description`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast('✅ Content saved to event (' + mode + ')', 'success');
+                closeAiConfirmModal();
+                closeAiModal();
+                loadEvents();
+            } else {
+                showToast('❌ Failed to save: ' + (data.error || ''), 'error');
+            }
+        } catch (err) {
+            showToast('❌ ' + err.message, 'error');
+        }
+    };
+
+    // Remove previous handlers to avoid duplicates
+    saveBtn.replaceWith(saveBtn.cloneNode(true));
+    const newSaveBtn = document.getElementById('ai-confirm-save');
+    newSaveBtn.addEventListener('click', newHandler);
+}
+
+function closeAiConfirmModal() {
+    const modal = document.getElementById('ai-confirm-modal');
+    modal.style.display = 'none';
+    modal.dataset.eventId = '';
+    modal.dataset.content = '';
+    document.getElementById('ai-confirm-preview').innerText = '';
 }
 
 // Cancel event

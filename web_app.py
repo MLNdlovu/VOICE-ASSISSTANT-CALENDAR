@@ -218,8 +218,13 @@ def update_event_description(event_id):
     try:
         data = request.get_json() or {}
         new_description = data.get('description', '')
+        # mode: 'overwrite' (default) or 'append'
+        mode = data.get('mode', 'overwrite')
         if new_description is None:
             return jsonify({'error': 'No description provided'}), 400
+
+        if mode not in ('overwrite', 'append'):
+            return jsonify({'error': 'Invalid mode. Use "overwrite" or "append".'}), 400
 
         service = get_calendar_service()
         if not service:
@@ -227,7 +232,15 @@ def update_event_description(event_id):
 
         # Fetch existing event to preserve other fields
         event = service.events().get(calendarId='primary', eventId=event_id).execute()
-        event['description'] = new_description
+        existing = event.get('description', '') or ''
+
+        if mode == 'append' and existing:
+            # Append with a clear separator and newline
+            sep = '\n\n---\n\n'
+            event['description'] = existing + sep + new_description
+        else:
+            # Overwrite or append when no existing description
+            event['description'] = new_description
 
         updated = service.events().update(calendarId='primary', eventId=event_id, body=event).execute()
 
