@@ -211,6 +211,33 @@ def get_events():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/events/<event_id>/description', methods=['PATCH'])
+@login_required
+def update_event_description(event_id):
+    """Update the description of an existing event."""
+    try:
+        data = request.get_json() or {}
+        new_description = data.get('description', '')
+        if new_description is None:
+            return jsonify({'error': 'No description provided'}), 400
+
+        service = get_calendar_service()
+        if not service:
+            return jsonify({'error': 'Not authenticated'}), 401
+
+        # Fetch existing event to preserve other fields
+        event = service.events().get(calendarId='primary', eventId=event_id).execute()
+        event['description'] = new_description
+
+        updated = service.events().update(calendarId='primary', eventId=event_id, body=event).execute()
+
+        return jsonify({'success': True, 'event': updated})
+    except HttpError as he:
+        return jsonify({'error': str(he)}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/book', methods=['POST'])
 @login_required
 def book_event():

@@ -381,73 +381,179 @@ async function loadEvents() {
     }
 }
 
+// --- Top-level AI Assistant client functions ---
+function openAiModal() {
+    document.getElementById('ai-modal').style.display = 'flex';
+}
+
+function closeAiModal() {
+    document.getElementById('ai-modal').style.display = 'none';
+    document.getElementById('ai-input').value = '';
+    document.getElementById('ai-response').innerText = '';
+    // clear attached event id
+    document.getElementById('ai-modal').dataset.eventId = '';
+}
+
+function openAiModalForEvent(eventId, title) {
+    openAiModal();
+    const input = document.getElementById('ai-input');
+    input.value = title || '';
+    document.getElementById('ai-modal').dataset.eventId = eventId;
+}
+
+function openSummarizeModal(eventId) {
+    // Reuse the AI modal but switch UI to summarization: prefill input with placeholder
+    openAiModal();
+    const input = document.getElementById('ai-input');
+    input.value = '';
+    document.getElementById('ai-modal').dataset.eventId = eventId;
+    document.getElementById('ai-response').innerText = 'Paste meeting notes above and click Ask to summarize.';
+}
+
+async function callAiChat() {
+    const input = document.getElementById('ai-input').value.trim();
+    if (!input) {
+        showToast('Please enter a question for the AI', 'warning');
+        return;
+    }
+
+    document.getElementById('ai-response').innerText = 'Thinking...';
+
+    try {
+        const res = await fetch(`${API_BASE}/ai/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: input })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.response;
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function callAiAgenda() {
+    const input = document.getElementById('ai-input').value.trim();
+    if (!input) {
+        showToast('Please provide a meeting title or description', 'warning');
+        return;
+    }
+    document.getElementById('ai-response').innerText = 'Generating agenda...';
+
+    try {
+        const res = await fetch(`${API_BASE}/ai/agenda`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: input })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.agenda;
+            // Offer to save if opened for an event
+            const eventId = document.getElementById('ai-modal').dataset.eventId;
+            if (eventId) {
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'btn btn-primary';
+                saveBtn.innerText = 'Save Agenda to Event';
+                saveBtn.onclick = () => saveAgendaToEvent(eventId, data.agenda);
+                // append the button if not already present
+                if (!document.getElementById('ai-save-agenda')) {
+                    saveBtn.id = 'ai-save-agenda';
+                    document.querySelector('.modal-content').appendChild(saveBtn);
+                }
+            }
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function callAiSummarize() {
+    const notes = document.getElementById('ai-input').value.trim();
+    if (!notes) {
+        showToast('Please paste the meeting notes to summarize', 'warning');
+        return;
+    }
+    document.getElementById('ai-response').innerText = 'Summarizing notes...';
+    try {
+        const res = await fetch(`${API_BASE}/ai/summarize`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes: notes })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.summary;
+            const eventId = document.getElementById('ai-modal').dataset.eventId;
+            if (eventId && !document.getElementById('ai-save-summary')) {
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'btn btn-primary';
+                saveBtn.id = 'ai-save-summary';
+                saveBtn.innerText = 'Save Summary to Event';
+                saveBtn.onclick = () => saveSummaryToEvent(eventId, data.summary);
+                document.querySelector('.modal-content').appendChild(saveBtn);
+            }
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function saveAgendaToEvent(eventId, agendaText) {
+    try {
+        // Optionally fetch existing description and append; for simplicity overwrite/replace
+        const body = { description: (agendaText || '') };
+        const res = await fetch(`${API_BASE}/events/${eventId}/description`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast('✅ Agenda saved to event', 'success');
+            closeAiModal();
+            loadEvents();
+        } else {
+            showToast('❌ Failed to save agenda: ' + (data.error || ''), 'error');
+        }
+    } catch (err) {
+        showToast('❌ ' + err.message, 'error');
+    }
+}
+
+async function saveSummaryToEvent(eventId, summaryText) {
+    try {
+        const body = { description: (summaryText || '') };
+        const res = await fetch(`${API_BASE}/events/${eventId}/description`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast('✅ Summary saved to event', 'success');
+            closeAiModal();
+            loadEvents();
+        } else {
+            showToast('❌ Failed to save summary: ' + (data.error || ''), 'error');
+        }
+    } catch (err) {
+        showToast('❌ ' + err.message, 'error');
+    }
+}
+
 // Cancel event
 async function cancelEvent(eventId) {
     if (!confirm('Are you sure you want to cancel this event?')) {
         return;
-    }
-
-
-    // --- AI Assistant client functions ---
-    function openAiModal() {
-        document.getElementById('ai-modal').style.display = 'flex';
-    }
-
-    function closeAiModal() {
-        document.getElementById('ai-modal').style.display = 'none';
-        document.getElementById('ai-input').value = '';
-        document.getElementById('ai-response').innerText = '';
-    }
-
-    async function callAiChat() {
-        const input = document.getElementById('ai-input').value.trim();
-        if (!input) {
-            showToast('Please enter a question for the AI', 'warning');
-            return;
-        }
-
-        document.getElementById('ai-response').innerText = 'Thinking...';
-
-        try {
-            const res = await fetch(`${API_BASE}/ai/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: input })
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-                document.getElementById('ai-response').innerText = data.response;
-            } else {
-                document.getElementById('ai-response').innerText = data.error || 'AI error';
-            }
-        } catch (err) {
-            document.getElementById('ai-response').innerText = err.message;
-        }
-    }
-
-    async function callAiAgenda() {
-        const input = document.getElementById('ai-input').value.trim();
-        if (!input) {
-            showToast('Please provide a meeting title or description', 'warning');
-            return;
-        }
-        document.getElementById('ai-response').innerText = 'Generating agenda...';
-
-        try {
-            const res = await fetch(`${API_BASE}/ai/agenda`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: input })
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-                document.getElementById('ai-response').innerText = data.agenda;
-            } else {
-                document.getElementById('ai-response').innerText = data.error || 'AI error';
-            }
-        } catch (err) {
-            document.getElementById('ai-response').innerText = err.message;
-        }
     }
     try {
         const response = await fetch(`${API_BASE}/cancel/${eventId}`, {
