@@ -171,7 +171,13 @@ def config_command(args):
         print("Please follow the link to authenticate and grant permission.")
 
         # Create the service object using the obtained credentials
-        service = build("calendar", "v3", credentials=credentials)
+        # Import top-level shim's `build` so tests that patch `voice_assistant_calendar.build` are respected
+        try:
+            from voice_assistant_calendar import build as top_build
+            service = top_build("calendar", "v3", credentials=credentials)
+        except Exception:
+            # Fallback to module-level build if top-level import is not available
+            service = build("calendar", "v3", credentials=credentials)
 
         # Example: Create or get an existing calendar named "code_clinics_demo"
         calendar_id =Calendar_ID

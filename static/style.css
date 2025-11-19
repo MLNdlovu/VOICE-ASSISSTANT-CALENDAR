@@ -7,17 +7,25 @@
 }
 
 :root {
+    /* Default (dark) theme colors */
     --primary-color: #0b3d91;
     --secondary-color: #4fb0ff;
     --accent-color: #ff8a65;
     --success-color: #4caf50;
     --error-color: #f44336;
-    --bg-color: linear-gradient(135deg, #07132a 0%, #0b3d91 40%, #4fb0ff 100%);
+    --bg-gradient: linear-gradient(135deg, #07132a 0%, #0b3d91 40%, #4fb0ff 100%);
     --surface-color: rgba(12, 18, 28, 0.85);
     --text-color: #eaf6ff;
     --text-secondary: #cfeeff;
     --border-color: rgba(255,255,255,0.06);
     --focus-color: #4fb0ff;
+
+    /* Light theme overrides (applied when .theme-light is on body) */
+    --light-bg: linear-gradient(120deg, #f5f7fb 0%, #e8f1ff 100%);
+    --light-surface: #ffffff;
+    --light-text: #0b2340;
+    --light-secondary: #1e88e5;
+    --light-border: rgba(13, 71, 161, 0.06);
 }
 
 /* Accessibility: Skip to main content link */
@@ -48,7 +56,7 @@ textarea:focus-visible {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--bg-color);
+    background: var(--bg-gradient);
     color: var(--text-color);
     line-height: 1.6;
     min-height: 100vh;
@@ -113,6 +121,31 @@ body {
     background: linear-gradient(135deg, #0d47a1 0%, #42a5f5 100%);
     box-shadow: 0 8px 32px rgba(66, 165, 245, 0.35);
 }
+}
+
+/* Theme: Light */
+body.theme-light {
+    background: var(--light-bg);
+    color: var(--light-text);
+}
+body.theme-light .content,
+body.theme-light .sidebar,
+body.theme-light .command-section,
+body.theme-light .event-card {
+    background: var(--light-surface);
+    color: var(--light-text);
+    border: 1px solid var(--light-border);
+}
+body.theme-light .header {
+    background: linear-gradient(135deg, var(--light-secondary) 0%, #8ecbff 100%);
+}
+body.theme-light .btn-primary {
+    background-color: var(--light-secondary);
+}
+
+/* Smooth transitions for theme changes */
+body, .content, .sidebar, .event-card, .modal-content {
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
 .container {
@@ -379,16 +412,39 @@ body {
     display: inline-block;
 }
 
+/* Modern button styles */
 .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 18px;
+    box-shadow: 0 6px 20px rgba(11,61,145,0.18);
 }
 
 .btn-primary:hover {
-    background-color: #1565c0;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(11,61,145,0.22);
 }
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+.btn-icon {
+    background: rgba(255,255,255,0.03);
+    color: var(--text-color);
+    padding: 8px 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-small { padding: 6px 10px; font-size: 13px; }
 
 .btn-danger {
     background-color: var(--error-color);
@@ -742,4 +798,15 @@ body {
 .settings-form {
     border-radius: 10px;
 }
+
+
+
+/* Compact event card variant */
+.event-card.compact {
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
+.event-card.compact .event-title { font-size: 15px; }
+.event-card.compact .event-time { font-size: 12px; }
 

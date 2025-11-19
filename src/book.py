@@ -2,7 +2,7 @@
 import datetime
 import json
 from prettytable import PrettyTable
-import view
+from src import view
 from googleapiclient.errors import HttpError
 import os
 

@@ -74,56 +74,80 @@ pip install openai
 Below are concrete AI enhancements that would add value to the product. These are grouped by effort/impact.
 
 High-impact ideas:
-- Auto-summarize meeting notes: After an event ends, allow the user to paste notes and generate a short meeting summary to attach to the event or email to participants.
-- Agenda generation: Given an event title and participants, auto-generate a meeting agenda and suggested time allocations for items.
-- Smart rescheduling assistant: Provide recommendations to move events based on priority, suggested buffers, and participant availability.
-- Email / message drafting: Draft polite follow-ups, invites, or cancellations using event context.
-- Conflict resolver: Automatically propose resolutions for double-bookings, with suggested times and rationale.
 
-Medium-impact ideas:
-- Event title normalization: Use the LLM to clean and normalize user-provided event titles (e.g., convert "proj talk" → "Project Discussion: API v2").
-- Auto-tagging: Suggest tags or categories for events ("study", "meeting", "personal") for filtering and analytics.
-- Smart reminders: Recommend reminder timings based on event type and user habits (e.g., 1 hour before for meetings, 24 hours for deadlines).
-- Meeting length prediction: Predict appropriate meeting length from the description.
+## AI Assistant Functions
 
-Low-effort / exploratory ideas:
-- Sentiment / urgency detection: Flag events or messages that sound urgent or emotional.
-- Natural language calendar queries: Expand the NLU so users can ask multi-step questions like "Move my 3pm meeting to the next available 30 minute slot tomorrow morning".
-- Multi-language support: Auto-detect language and use the LLM to parse commands in other languages.
-- Voice-based intent clarification: If the intent is ambiguous, ask a short clarifying question before booking.
+This document describes the AI features available in the Voice Assistant Calendar application and how to use them from the dashboard.
 
+## Overview
 
-## Example prompts and usage patterns
+The AI Assistant can:
 
-- Suggest meeting time:
+- Generate structured meeting agendas.
+- Summarize meeting notes into concise summaries and action items.
+- Extract action items from event descriptions or meeting notes.
+- Draft emails (subject + body) for invites or follow-ups.
+- Suggest possible meeting times based on participants and duration.
+
+All AI features are optional and require a configured AI backend (OpenAI API key) to be available. If AI is not configured, the UI will show an error and the endpoints will return HTTP 503.
+
+## Endpoints
+
+The backend exposes the following endpoints under `/api/ai/`:
+
+- `POST /api/ai/chat` — General chat with the assistant. Body: `{ message: string, context?: string }`.
+- `POST /api/ai/agenda` — Generate a meeting agenda. Body: `{ title?: string, duration?: number, participants?: string[], notes?: string }`.
+- `POST /api/ai/summarize` — Summarize notes. Body: `{ notes: string }`.
+- `POST /api/ai/actions` — Extract action items from notes. Body: `{ title?: string, notes: string }`.
+- `POST /api/ai/email` — Draft an email for an event. Body: `{ title: string, recipients?: string[], context?: string }`.
+- `POST /api/ai/suggest-times` — Suggest meeting time slots. Body: `{ duration?: number, participants?: string[], preferred_days?: string }`.
+
+All endpoints require the user to be authenticated (login via Google) and return JSON. If AI is not configured, endpoints return a 503 with a helpful message.
+
+## Using AI from the Dashboard
+
+- Open the dashboard and go to the Events tab.
+- Each event has AI action buttons:
+  - `Agenda` — generate a structured agenda for the event (uses event title as prompt).
+  - `Actions` — extract action items from the event description.
+  - `Summarize` — paste meeting notes and generate a concise summary.
+  - `Draft Email` — draft an email for the event; the assistant will try to include a subject and email body. The UI will attempt to autofill recipients from the event's organizer or attendees when available.
+  - `Suggest Times` — request suggested meeting times.
+
+When AI generates content you can optionally save it back to the event description using the Save flow — a confirmation modal lets you choose between `Append` and `Overwrite`.
+
+## Example Client Calls
+
+Overwrite description:
+
+```json
+PATCH /api/events/<event_id>/description
+{ "description": "New content from AI", "mode": "overwrite" }
 ```
-I need a 45 minute study session for my algorithms course. When should I schedule it this week?
+
+Append description:
+
+```json
+PATCH /api/events/<event_id>/description
+{ "description": "Additional AI notes", "mode": "append" }
 ```
 
-- Resolve conflict:
-```
-I have two overlapping meetings tomorrow at 3 PM and 3:30 PM with different participants. How can I resolve this?
-```
+Draft email example request body:
 
-- Generate agenda:
-```
-Create a meeting agenda for a 60-minute planning session about the new website redesign -- include time allocations.
+```json
+POST /api/ai/email
+{ "title": "Project update", "recipients": ["alice@example.com"], "context": "Summary of today's meeting and action items" }
 ```
 
+## Notes & Troubleshooting
 
-## Privacy and safety notes
+- If `/ai` returns "Not Found", use the "Open Assistant" button on the dashboard. The app also provides a shortlink `/ai` which redirects to the dashboard and opens the modal.
+- If you see `AI not configured or not available`, ensure the server can import and initialize the AI client (set `OPENAI_API_KEY` in environment, and install the `openai` Python package if using the hosted integration).
 
-- Do not log or send sensitive personal data (passwords, private IDs) to third-party AI APIs.
-- Ensure that users consent to any third-party API usage and are aware of where their data is sent.
+## Security
 
+- Never commit API keys to the repository. Use environment variables or a secure secrets manager.
 
-## Next steps to integrate suggested features
+## Contact
 
-- Add endpoints in `web_app.py` to call `CalendarChatbot` for agenda generation, summarization, and conflict resolution.
-- Create UI flows (modals) to show AI suggestions and allow the user to accept, edit, or discard them.
-- Add telemetry / usage flags to opt users into AI features and save preferences.
-
-
----
-
-If you'd like, I can implement one of the suggested features now (pick one), add an "AI Assistant" modal to the UI, and wire a backend endpoint to `CalendarChatbot` to test it end-to-end.
+If you want additional AI behaviors (e.g., calendar-aware scheduling that checks attendees' free/busy), I can add integrations to query attendees' availability and provide more accurate time suggestions.

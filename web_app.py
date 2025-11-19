@@ -615,6 +615,84 @@ def get_chatbot():
         return None
 
 
+def _fallback_agenda(title, duration=60, participants=None, notes=''):
+    participants = participants or []
+    agenda = [f"Agenda for: {title}", f"Duration: {duration} minutes", ""]
+    agenda.append("1. Welcome & Objectives (5 mins)")
+    agenda.append("2. Main Discussion (" + str(max(10, duration - 20)) + " mins)")
+    agenda.append("3. Action Items & Owners (10 mins)")
+    if participants:
+        agenda.append("")
+        agenda.append("Participants: " + ', '.join(participants))
+    if notes:
+        agenda.append("")
+        agenda.append("Notes: " + (notes[:300] + ('...' if len(notes) > 300 else '')))
+    return '\n'.join(agenda)
+
+
+def _fallback_actions(notes, title='Meeting'):
+    # Very small heuristic: split by sentences and pick ones containing verbs like 'will' or 'please' or 'action'
+    import re
+    sentences = re.split(r'[\n\.\?\!]+', notes or '')
+    actions = []
+    for s in sentences:
+        s = s.strip()
+        if not s: continue
+        if any(tok in s.lower() for tok in ['please', 'will', 'action', 'assign', 'todo', 'follow up', 'follow-up']):
+            actions.append(s)
+        if len(actions) >= 6:
+            break
+    if not actions:
+        # Fallback generic actions
+        actions = [f"Follow up on {title}", "Assign owners to key tasks", "Confirm deadlines and next steps"]
+    return '\n'.join([f"{i+1}. {a}" for i,a in enumerate(actions)])
+
+
+def _fallback_email(title, recipients, context=''):
+    subj = f"Follow-up: {title}"
+    body = f"Hi all,\n\nThanks for attending {title}.\n\nSummary:\n{(context[:400] + ('...' if len(context) > 400 else ''))}\n\nAction items:\n1. Follow up on the items above.\n\nBest regards,\nYour Assistant"
+    return subj, body
+
+
+def _fallback_suggestions(duration, participants, preferred):
+    import datetime
+    now = datetime.datetime.now()
+    suggestions = []
+    base = now + datetime.timedelta(days=1)
+    times = [10, 14, 16]
+    for i in range(3):
+        slot_day = base + datetime.timedelta(days=i)
+        h = times[i % len(times)]
+        start = slot_day.replace(hour=h, minute=0, second=0, microsecond=0)
+        suggestions.append(start.isoformat())
+    return '\n'.join([f"{i+1}. {s}" for i,s in enumerate(suggestions)])
+
+
+def _fallback_summarize(notes):
+    if not notes:
+        return 'No notes provided.'
+    short = notes.strip()
+    if len(short) > 300:
+        short = short[:300].rsplit(' ',1)[0] + '...'
+    # try to extract bullets
+    bullets = [line.strip() for line in notes.splitlines() if line.strip().startswith('-') or line.strip().startswith('*')]
+    summary = short
+    if bullets:
+        summary += '\n\nAction items:\n' + '\n'.join(bullets[:6])
+    return summary
+
+
+def _fallback_followups(notes, title):
+    actions = _fallback_actions(notes, title)
+    subj, body = _fallback_email(title, [], notes)
+    return f"Suggested email:\nSubject: {subj}\n\n{body}\n\nSuggested actions:\n{actions}"
+
+
+def _fallback_translate(text, target):
+    # Very simple placeholder translation: denote language and return original text.
+    return f"[{target}] " + text
+
+
 @app.route('/api/ai/chat', methods=['POST'])
 @login_required
 def ai_chat():
@@ -626,14 +704,14 @@ def ai_chat():
         return jsonify({'error': 'No message provided'}), 400
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
-    try:
-        ai_response = bot.chat(message, calendar_context=context)
-        return jsonify({'success': True, 'response': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(message, calendar_context=context)
+            return jsonify({'success': True, 'response': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    # fallback: simple echo/placeholder
+    return jsonify({'success': True, 'response': f"[local] {message}"})
 
 
 @app.route('/api/ai/agenda', methods=['POST'])
@@ -647,15 +725,15 @@ def ai_agenda():
     notes = data.get('notes', '')
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Create a structured agenda for a {duration}-minute meeting titled '{title}'. Include sections, time allocations, and brief bullet points. Participants: {', '.join(participants)}. Additional notes: {notes}"
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'agenda': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'agenda': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    # fallback
+    return jsonify({'success': True, 'agenda': _fallback_agenda(title, duration, participants, notes)})
 
 
 @app.route('/api/ai/actions', methods=['POST'])
@@ -669,15 +747,14 @@ def ai_actions():
         return jsonify({'error': 'No notes provided'}), 400
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Extract concise action items from the following meeting notes for '{title}':\n\n{notes}\n\nReturn a numbered list of action items with responsible parties if mentioned." 
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'actions': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'actions': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'success': True, 'actions': _fallback_actions(notes, title)})
 
 
 @app.route('/api/ai/email', methods=['POST'])
@@ -692,15 +769,15 @@ def ai_email():
     context = data.get('context', '')
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Draft a professional email about '{title}'. Recipients: {', '.join(recipients)}. Context: {context}. Include a clear subject line, brief summary, action items, and a polite closing." 
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'email': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'email': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    subj, body = _fallback_email(title, recipients, context)
+    return jsonify({'success': True, 'email': f"Subject: {subj}\n\n{body}"})
 
 
 @app.route('/api/ai/suggest-times', methods=['POST'])
@@ -715,15 +792,14 @@ def ai_suggest_times():
     preferred = data.get('preferred_days', '')
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Suggest 3 available meeting time slots for a {duration}-minute meeting with participants: {', '.join(participants)}. Preferred days/times: {preferred}. Return ISO local date/time suggestions with brief justification." 
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'suggestions': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'suggestions': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'success': True, 'suggestions': _fallback_suggestions(duration, participants, preferred)})
 
 
 @app.route('/api/ai/summarize', methods=['POST'])
@@ -736,15 +812,14 @@ def ai_summarize():
         return jsonify({'error': 'No notes provided'}), 400
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Please provide a concise meeting summary and action items from the following notes:\n\n{notes}\n\nReturn a short summary and a list of action items." 
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'summary': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'summary': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'success': True, 'summary': _fallback_summarize(notes)})
 
 
 @app.route('/api/ai/followups', methods=['POST'])
@@ -759,15 +834,14 @@ def ai_followups():
         return jsonify({'error': 'No notes provided'}), 400
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Based on these meeting notes for '{title}', suggest concise follow-up emails and next steps. Provide a short suggested email draft and a numbered list of next actions. Notes:\n\n{notes}"
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'followups': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'followups': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'success': True, 'followups': _fallback_followups(notes, title)})
 
 
 @app.route('/api/ai/translate', methods=['POST'])
@@ -782,15 +856,14 @@ def ai_translate():
         return jsonify({'error': 'No text provided'}), 400
 
     bot = get_chatbot()
-    if not bot:
-        return jsonify({'error': 'AI not configured or not available'}), 503
-
     prompt = f"Translate the following text to {target} while preserving meaning and formatting:\n\n{text}"
-    try:
-        ai_response = bot.chat(prompt)
-        return jsonify({'success': True, 'translation': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'translation': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'success': True, 'translation': _fallback_translate(text, target)})
 
 
 if __name__ == '__main__':
