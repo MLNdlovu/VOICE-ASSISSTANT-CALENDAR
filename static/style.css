@@ -7,17 +7,17 @@
 }
 
 :root {
-    --primary-color: #0d47a1;
-    --secondary-color: #42a5f5;
-    --accent-color: #ff6f00;
+    --primary-color: #0b3d91;
+    --secondary-color: #4fb0ff;
+    --accent-color: #ff8a65;
     --success-color: #4caf50;
     --error-color: #f44336;
-    --bg-color: linear-gradient(135deg, #0d47a1 0%, #42a5f5 100%);
-    --surface-color: rgba(26, 26, 26, 0.95);
-    --text-color: #ffffff;
-    --text-secondary: #b3e5fc;
-    --border-color: #404040;
-    --focus-color: #42a5f5;
+    --bg-color: linear-gradient(135deg, #07132a 0%, #0b3d91 40%, #4fb0ff 100%);
+    --surface-color: rgba(12, 18, 28, 0.85);
+    --text-color: #eaf6ff;
+    --text-secondary: #cfeeff;
+    --border-color: rgba(255,255,255,0.06);
+    --focus-color: #4fb0ff;
 }
 
 /* Accessibility: Skip to main content link */
@@ -661,5 +661,56 @@ body {
 
 .toast.hide {
     animation: slideOut 0.3s ease-in-out forwards;
+}
+
+/* Additional UI refinements and AI card styles */
+.hero {
+    backdrop-filter: blur(6px) saturate(120%);
+}
+
+.ai-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(79,176,255,0.02));
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 18px 22px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 20px rgba(3, 8, 20, 0.4);
+}
+.ai-card-left h3 {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: var(--secondary-color);
+}
+.ai-card-left p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+.ai-card-right {
+    display: flex;
+    gap: 12px;
+}
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+.btn-ghost:hover {
+    background: rgba(79,176,255,0.06);
+    color: var(--text-color);
+}
+
+/* Slightly increase card radius for a softer look */
+.command-section,
+.event-card,
+.booking-form,
+.settings-form {
+    border-radius: 10px;
 }
 

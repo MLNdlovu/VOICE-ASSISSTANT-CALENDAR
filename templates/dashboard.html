@@ -28,6 +28,7 @@
                 <h1>🗓️ Voice Assistant Calendar</h1>
                 <div class="header-right">
                     <span id="user-email" class="user-email" aria-label="Current user">{{ user_email }}</span>
+                    <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost" aria-label="View AI documentation" target="_blank">AI Docs</a>
                     <a href="/logout" class="btn btn-logout" aria-label="Sign out from account">Sign Out</a>
                 </div>
             </div>
@@ -58,6 +59,18 @@
 
             <!-- Content Area -->
             <section class="content">
+                <!-- AI Assistant Card -->
+                <div class="ai-card">
+                    <div class="ai-card-left">
+                        <h3>🤖 AI Assistant</h3>
+                        <p>Ask the assistant to analyze your schedule, suggest meeting times, generate agendas, or draft emails.</p>
+                    </div>
+                    <div class="ai-card-right">
+                        <a href="/ai" class="btn btn-primary">Open Assistant</a>
+                        <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost">See AI Features</a>
+                    </div>
+                </div>
+
                 <!-- Voice Commands Tab -->
                 <div class="tab-content active" id="voice-tab">
                     <h2>🎤 Voice Commands</h2>
