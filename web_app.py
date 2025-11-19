@@ -26,6 +26,12 @@ sys.path.insert(0, './src')
 import book
 import get_details
 import voice_handler
+try:
+    from ai_chatgpt import initialize_chatbot, is_chatgpt_available
+except Exception:
+    # ChatGPT integration is optional; handle gracefully if library not present
+    initialize_chatbot = None
+    is_chatgpt_available = lambda: False
 
 # Flask app setup
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -515,6 +521,86 @@ def voice_command():
     except Exception as e:
         speak_text = 'An error occurred. Please try again.'
         return jsonify({'error': str(e), 'type': 'exception', 'speak': True, 'speak_text': speak_text}), 500
+
+
+# --- AI Endpoints ---
+_chatbot = None
+
+def get_chatbot():
+    global _chatbot
+    if _chatbot is not None:
+        return _chatbot
+    if initialize_chatbot is None:
+        return None
+    try:
+        _chatbot = initialize_chatbot()
+        return _chatbot
+    except Exception:
+        return None
+
+
+@app.route('/api/ai/chat', methods=['POST'])
+@login_required
+def ai_chat():
+    """Simple chat/assistant endpoint that forwards user messages to the AI."""
+    data = request.get_json() or {}
+    message = data.get('message')
+    context = data.get('context')
+    if not message:
+        return jsonify({'error': 'No message provided'}), 400
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    try:
+        ai_response = bot.chat(message, calendar_context=context)
+        return jsonify({'success': True, 'response': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/agenda', methods=['POST'])
+@login_required
+def ai_agenda():
+    """Generate an agenda for a meeting/event using the AI."""
+    data = request.get_json() or {}
+    title = data.get('title', 'Meeting')
+    duration = data.get('duration', 60)
+    participants = data.get('participants', [])
+    notes = data.get('notes', '')
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Create a structured agenda for a {duration}-minute meeting titled '{title}'. Include sections, time allocations, and brief bullet points. Participants: {', '.join(participants)}. Additional notes: {notes}"
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'agenda': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/summarize', methods=['POST'])
+@login_required
+def ai_summarize():
+    """Summarize meeting notes or text using the AI."""
+    data = request.get_json() or {}
+    notes = data.get('notes', '')
+    if not notes:
+        return jsonify({'error': 'No notes provided'}), 400
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Please provide a concise meeting summary and action items from the following notes:\n\n{notes}\n\nReturn a short summary and a list of action items." 
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'summary': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

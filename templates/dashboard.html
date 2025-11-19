@@ -311,5 +311,18 @@
     </div>
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <!-- AI Assistant Modal -->
+    <div id="ai-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAiModal()">✕</button>
+            <h3>AI Assistant</h3>
+            <textarea id="ai-input" placeholder="Ask the assistant anything about your calendar, or request an agenda..." rows="4" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);"></textarea>
+            <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
+                <button class="btn btn-ghost" onclick="callAiChat()">Ask</button>
+                <button class="btn btn-primary" onclick="callAiAgenda()">Generate Agenda</button>
+            </div>
+            <div id="ai-response" style="margin-top:16px; white-space:pre-wrap;"></div>
+        </div>
+    </div>
 </body>
 </html>

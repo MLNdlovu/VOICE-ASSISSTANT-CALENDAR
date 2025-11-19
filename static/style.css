@@ -706,6 +706,35 @@ body {
     color: var(--text-color);
 }
 
+/* Modal for AI Assistant */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2,6,12,0.6);
+    z-index: 2000;
+}
+.modal-content {
+    width: 720px;
+    max-width: 95%;
+    background: linear-gradient(180deg, rgba(12,18,28,0.98), rgba(12,18,28,0.95));
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(3,8,20,0.6);
+    color: var(--text-color);
+}
+.modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    float: right;
+    cursor: pointer;
+}
+
 /* Slightly increase card radius for a softer look */
 .command-section,
 .event-card,

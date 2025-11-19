@@ -385,6 +385,68 @@ async function cancelEvent(eventId) {
         return;
     }
 
+
+    // --- AI Assistant client functions ---
+    function openAiModal() {
+        document.getElementById('ai-modal').style.display = 'flex';
+    }
+
+    function closeAiModal() {
+        document.getElementById('ai-modal').style.display = 'none';
+        document.getElementById('ai-input').value = '';
+        document.getElementById('ai-response').innerText = '';
+    }
+
+    async function callAiChat() {
+        const input = document.getElementById('ai-input').value.trim();
+        if (!input) {
+            showToast('Please enter a question for the AI', 'warning');
+            return;
+        }
+
+        document.getElementById('ai-response').innerText = 'Thinking...';
+
+        try {
+            const res = await fetch(`${API_BASE}/ai/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: input })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                document.getElementById('ai-response').innerText = data.response;
+            } else {
+                document.getElementById('ai-response').innerText = data.error || 'AI error';
+            }
+        } catch (err) {
+            document.getElementById('ai-response').innerText = err.message;
+        }
+    }
+
+    async function callAiAgenda() {
+        const input = document.getElementById('ai-input').value.trim();
+        if (!input) {
+            showToast('Please provide a meeting title or description', 'warning');
+            return;
+        }
+        document.getElementById('ai-response').innerText = 'Generating agenda...';
+
+        try {
+            const res = await fetch(`${API_BASE}/ai/agenda`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: input })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                document.getElementById('ai-response').innerText = data.agenda;
+            } else {
+                document.getElementById('ai-response').innerText = data.error || 'AI error';
+            }
+        } catch (err) {
+            document.getElementById('ai-response').innerText = err.message;
+        }
+    }
     try {
         const response = await fetch(`${API_BASE}/cancel/${eventId}`, {
             method: 'DELETE'
