@@ -9,7 +9,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory, abort
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -26,12 +26,9 @@ sys.path.insert(0, './src')
 import book
 import get_details
 import voice_handler
-try:
-    from ai_chatgpt import initialize_chatbot, is_chatgpt_available
-except Exception:
-    # ChatGPT integration is optional; handle gracefully if library not present
-    initialize_chatbot = None
-    is_chatgpt_available = lambda: False
+# Defer importing the optional AI module to runtime to avoid blocking imports (e.g., when openai is not installed)
+initialize_chatbot = None
+is_chatgpt_available = lambda: False
 
 # Flask app setup
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -167,6 +164,23 @@ def logout():
 def dashboard():
     """Main dashboard page."""
     return render_template('dashboard.html', user_email=session.get('user_email'))
+
+
+@app.route('/docs/<path:filename>')
+@login_required
+def serve_docs(filename):
+    """Serve markdown docs from the local docs/ folder."""
+    docs_dir = os.path.join(os.path.dirname(__file__), 'docs')
+    if not os.path.exists(os.path.join(docs_dir, filename)):
+        abort(404)
+    return send_from_directory(docs_dir, filename)
+
+
+@app.route('/ai')
+@login_required
+def ai_shortlink():
+    """Redirect helper so /ai opens the dashboard and triggers the modal via hash."""
+    return redirect(url_for('dashboard') + '#ai')
 
 
 # --- API Endpoints ---
@@ -570,8 +584,19 @@ def get_chatbot():
     global _chatbot
     if _chatbot is not None:
         return _chatbot
+    # Try to import and initialize the chatbot on demand. Keep this lazy to avoid
+    # importing heavy optional dependencies (like `openai`) during test collection.
+    global initialize_chatbot, is_chatgpt_available
     if initialize_chatbot is None:
-        return None
+        try:
+            from ai_chatgpt import initialize_chatbot as _init_cb, is_chatgpt_available as _is_avail
+            initialize_chatbot = _init_cb
+            is_chatgpt_available = _is_avail
+        except Exception:
+            initialize_chatbot = None
+            is_chatgpt_available = lambda: False
+            return None
+
     try:
         _chatbot = initialize_chatbot()
         return _chatbot
@@ -618,6 +643,74 @@ def ai_agenda():
     try:
         ai_response = bot.chat(prompt)
         return jsonify({'success': True, 'agenda': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/actions', methods=['POST'])
+@login_required
+def ai_actions():
+    """Extract action items from meeting notes or event description."""
+    data = request.get_json() or {}
+    notes = data.get('notes', '')
+    title = data.get('title', 'Meeting')
+    if not notes:
+        return jsonify({'error': 'No notes provided'}), 400
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Extract concise action items from the following meeting notes for '{title}':\n\n{notes}\n\nReturn a numbered list of action items with responsible parties if mentioned." 
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'actions': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/email', methods=['POST'])
+@login_required
+def ai_email():
+    """Draft an email for an event (invites, follow-ups, summary).
+    Expects: title, recipients (list), body/context (notes or agenda)
+    """
+    data = request.get_json() or {}
+    title = data.get('title', 'Meeting')
+    recipients = data.get('recipients', [])
+    context = data.get('context', '')
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Draft a professional email about '{title}'. Recipients: {', '.join(recipients)}. Context: {context}. Include a clear subject line, brief summary, action items, and a polite closing." 
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'email': ai_response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ai/suggest-times', methods=['POST'])
+@login_required
+def ai_suggest_times():
+    """Suggest meeting times based on participants and duration.
+    Expects: duration (minutes), participants (list), preferred_days (optional)
+    """
+    data = request.get_json() or {}
+    duration = data.get('duration', 30)
+    participants = data.get('participants', [])
+    preferred = data.get('preferred_days', '')
+
+    bot = get_chatbot()
+    if not bot:
+        return jsonify({'error': 'AI not configured or not available'}), 503
+
+    prompt = f"Suggest 3 available meeting time slots for a {duration}-minute meeting with participants: {', '.join(participants)}. Preferred days/times: {preferred}. Return ISO local date/time suggestions with brief justification." 
+    try:
+        ai_response = bot.chat(prompt)
+        return jsonify({'success': True, 'suggestions': ai_response})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

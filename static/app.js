@@ -371,13 +371,107 @@ async function loadEvents() {
                 <div class="event-actions">
                     <button class="btn-cancel-event" onclick="cancelEvent('${event.id}')">🗑️ Cancel</button>
                     <button class="btn btn-ghost" onclick="openAiModalForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">🤖 Agenda</button>
+                    <button class="btn btn-ghost" onclick="callAiActionsForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">📌 Actions</button>
                     <button class="btn btn-ghost" onclick="openSummarizeModal('${event.id}')">📝 Summarize</button>
+                    <button class="btn btn-ghost" onclick="callAiEmailForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">✉️ Draft Email</button>
+                    <button class="btn btn-ghost" onclick="callAiSuggestTimesForEvent('${event.id}','${escapeHtml(event.summary).replace(/'/g, "\\'")}')">⏰ Suggest Times</button>
                 </div>
             </div>
         `).join('');
     } catch (error) {
         console.error('Error loading events:', error);
         eventsList.innerHTML = `<p class="no-events">Error loading events: ${error.message}</p>`;
+    }
+}
+
+// New AI helpers for per-event actions
+async function callAiActionsForEvent(eventId, title) {
+    openAiModal();
+    const input = document.getElementById('ai-input');
+    input.value = '';
+    document.getElementById('ai-modal').dataset.eventId = eventId;
+    document.getElementById('ai-response').innerText = 'Extracting action items...';
+
+    // Optionally fetch event description to provide context
+    try {
+        const resEvent = await fetch(`${API_BASE}/events`);
+        const events = await resEvent.json();
+        const ev = events.find(e => e.id === eventId) || {};
+        const notes = ev.description || '';
+
+        const res = await fetch(`${API_BASE}/ai/actions`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ title: title, notes: notes })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.actions;
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function callAiEmailForEvent(eventId, title) {
+    openAiModal();
+    document.getElementById('ai-input').value = title || '';
+    document.getElementById('ai-response').innerText = 'Drafting email...';
+    try {
+        const resEvent = await fetch(`${API_BASE}/events`);
+        const events = await resEvent.json();
+        const ev = events.find(e => e.id === eventId) || {};
+        const context = ev.description || '';
+        // For now, recipients empty
+        const res = await fetch(`${API_BASE}/ai/email`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ title: title, recipients: [], context: context })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.email;
+            // Add copy and mailto buttons
+            addAiModalEmailActions(title, data.email);
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+function addAiModalEmailActions(subject, body) {
+    // remove previous actions
+    const existing = document.getElementById('ai-email-actions');
+    if (existing) existing.remove();
+    const container = document.createElement('div');
+    container.id = 'ai-email-actions';
+    container.style.marginTop = '12px';
+    container.innerHTML = `
+        <button class="btn btn-ghost" onclick="navigator.clipboard.writeText(${JSON.stringify(body)})">Copy Email</button>
+        <button class="btn btn-primary" onclick="window.location.href='mailto:?subject='+encodeURIComponent(${JSON.stringify(subject)})+'&body='+encodeURIComponent(${JSON.stringify(body)})">Open Mail Client</button>
+    `;
+    document.querySelector('.modal-content').appendChild(container);
+}
+
+async function callAiSuggestTimesForEvent(eventId, title) {
+    openAiModal();
+    document.getElementById('ai-input').value = title || '';
+    document.getElementById('ai-response').innerText = 'Suggesting times...';
+    try {
+        const res = await fetch(`${API_BASE}/ai/suggest-times`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ duration: 30, participants: [] })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('ai-response').innerText = data.suggestions;
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
     }
 }
 
@@ -745,4 +839,9 @@ document.addEventListener('DOMContentLoaded', function() {
             executeVoiceCommand();
         }
     });
+
+    // If user visited /ai, the server redirects to /dashboard#ai - open modal automatically
+    if (window.location.hash === '#ai') {
+        openAiModal();
+    }
 });
