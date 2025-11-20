@@ -1,7 +1,7 @@
 # Voice Assistant Calendar
 
 ## Overview
-Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar management system. It integrates with Google Calendar and provides a modern web dashboard, voice command support, and AI (ChatGPT) assistance for booking, managing, and viewing events. The project is designed for educational code clinics, students, educators, and professionals who need accessible, hands-free calendar management.
+Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar management system. It integrates with Google Calendar and provides a modern web dashboard, voice command support, and AI (ChatGPT) assistance for booking, managing, and viewing events. The project is designed for students, educators, and professionals who need accessible, hands-free calendar management.
 
 ## Features
 - **Web Dashboard**: Modern Flask-based web app for managing events, bookings, and settings.
@@ -14,7 +14,6 @@ Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar
 - **Testing**: Pytest-based test suite for core features.
 
 ## Target Market
-- Educational institutions (universities, colleges) running code clinics or tutoring sessions.
 - Students and educators needing efficient, hands-free scheduling.
 - Professionals and organizations seeking accessible, AI-powered calendar tools.
 - Users with accessibility needs who prefer or require voice interfaces.
