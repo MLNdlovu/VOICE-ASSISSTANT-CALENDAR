@@ -1,0 +1,83 @@
+# Voice Assistant Calendar
+
+## Overview
+Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar management system. It integrates with Google Calendar and provides a modern web dashboard, voice command support, and AI (ChatGPT) assistance for booking, managing, and viewing events. The project is designed for educational code clinics, students, educators, and professionals who need accessible, hands-free calendar management.
+
+## Features
+- **Web Dashboard**: Modern Flask-based web app for managing events, bookings, and settings.
+- **Google Calendar Integration**: OAuth2 authentication and full event management (view, book, cancel, update).
+- **Voice Commands**: Book, cancel, and view events using natural language voice input.
+- **AI Assistant**: ChatGPT integration for smart scheduling, agenda generation, and calendar Q&A.
+- **Accessibility**: Voice input/output and accessible UI for users with different needs.
+- **GUI (Legacy)**: Tkinter-based GUI (now deprecated in favor of the web dashboard).
+- **CLI Support**: Command-line interface for advanced users.
+- **Testing**: Pytest-based test suite for core features.
+
+## Target Market
+- Educational institutions (universities, colleges) running code clinics or tutoring sessions.
+- Students and educators needing efficient, hands-free scheduling.
+- Professionals and organizations seeking accessible, AI-powered calendar tools.
+- Users with accessibility needs who prefer or require voice interfaces.
+- Tech-savvy individuals interested in AI and productivity automation.
+
+## Quick Start
+1. **Clone the repository**
+2. **Install dependencies**:
+   ```sh
+   pip install -r requirements-voice.txt
+   ```
+3. **Configure Google OAuth**:
+   - Place your Google `client_secret_*.json` in the `.config/` directory.
+4. **Run the web app**:
+   ```sh
+   python web_app.py
+   ```
+   Open [http://localhost:5000](http://localhost:5000) in your browser.
+
+## Voice Commands Examples
+- "Book a slot on 2025-11-20 at 10:30 for Python help"
+- "Cancel my booking on 2025-11-20 at 10:30"
+- "Show me upcoming events"
+- "Help"
+
+## AI Assistant Examples
+- "Suggest the best time for a code clinic next week"
+- "Summarize my meetings for today"
+- "Draft a follow-up email for my last event"
+
+## Project Structure
+- `web_app.py` — Main Flask web server
+- `src/` — Core modules (AI, booking, voice, GUI, etc.)
+- `voice_handler.py` — Voice command parsing and TTS
+- `requirements-voice.txt` — Python dependencies
+- `templates/` and `static/` — Web UI assets
+- `tests/` — Automated test suite
+- `voice_assistant_calendar.json` — Example calendar events (for demo/testing)
+
+## Dependencies
+- Flask, Google API Python Client, google-auth-oauthlib
+- SpeechRecognition, PyAudio, pyttsx3 (voice)
+- openai, python-dotenv (AI)
+- prettytable, tkcalendar
+- pytest (testing)
+
+## Example Calendar Event (JSON)
+```
+{
+  "summary": "Code Clinics Test",
+  "start": {"dateTime": "2025-11-20T10:30:00+02:00"},
+  "end": {"dateTime": "2025-11-20T11:00:00+02:00"},
+  "attendees": [
+    {"email": "student@example.com"}
+  ]
+}
+```
+
+## Contributing
+Pull requests and suggestions are welcome! Please see the `docs/` folder for more information.
+
+## License
+MIT License
+
+---
+For more details, see the documentation in the `docs/` folder and the code comments in each module.
