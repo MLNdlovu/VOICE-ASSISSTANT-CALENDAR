@@ -16,8 +16,19 @@ Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar
 ## Target Market
 - Students and educators needing efficient, hands-free scheduling.
 - Professionals and organizations seeking accessible, AI-powered calendar tools.
+- **People with disabilities, blind and visually impaired users who need voice-first, accessible scheduling.**
 - Users with accessibility needs who prefer or require voice interfaces.
 - Tech-savvy individuals interested in AI and productivity automation.
+
+## Target audience
+This project is designed for people with disabilities, with a focus on blind and visually impaired users who benefit from voice-first calendar interaction and accessible UX.
+
+## Accessibility goals
+- Voice-driven calendar management (create, read, update, delete events by speech)
+- Audio feedback and confirmations for all actions
+- Screen-reader friendly text output and semantic structure
+- High-contrast and scalable UI options (for low-vision users)
+- Keyboard-only navigation and clear focus indicators
 
 ## Quick Start
 1. **Clone the repository**
@@ -34,13 +45,13 @@ Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar
    Open [http://localhost:5000](http://localhost:5000) in your browser.
 
 ## Voice Commands Examples
-- "Book a slot on 2025-11-20 at 10:30 for Python help"
+- "Book a slot on 2025-11-20 at 10:30"
 - "Cancel my booking on 2025-11-20 at 10:30"
 - "Show me upcoming events"
 - "Help"
 
 ## AI Assistant Examples
-- "Suggest the best time for a code clinic next week"
+- "Suggest the best time for a meeting next week"
 - "Summarize my meetings for today"
 - "Draft a follow-up email for my last event"
 
@@ -51,7 +62,6 @@ Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar
 - `requirements-voice.txt` — Python dependencies
 - `templates/` and `static/` — Web UI assets
 - `tests/` — Automated test suite
-- `voice_assistant_calendar.json` — Example calendar events (for demo/testing)
 
 ## Dependencies
 - Flask, Google API Python Client, google-auth-oauthlib
@@ -63,11 +73,11 @@ Voice Assistant Calendar is an AI-powered, voice-enabled scheduling and calendar
 ## Example Calendar Event (JSON)
 ```
 {
-  "summary": "Code Clinics Test",
+  "summary": "Meeting",
   "start": {"dateTime": "2025-11-20T10:30:00+02:00"},
   "end": {"dateTime": "2025-11-20T11:00:00+02:00"},
   "attendees": [
-    {"email": "student@example.com"}
+    {"email": "user@example.com"}
   ]
 }
 ```
@@ -79,4 +89,10 @@ Pull requests and suggestions are welcome! Please see the `docs/` folder for mor
 MIT License
 
 ---
+For more details, see the documentation in the `docs/` folder and the code comments in each module.
+
+## How to highlight this on GitHub
+- Add the above text to your README so it appears on the project homepage.
+- Add repository topics: accessibility, blind, visually-impaired, disability, voice-assistant, calendar.
+- Set the repo description to mention accessibility and blind/visually-impaired target audience.
 For more details, see the documentation in the `docs/` folder and the code comments in each module.
