@@ -26,6 +26,7 @@ sys.path.insert(0, './src')
 import book
 import get_details
 import voice_handler
+import src.recommender as recommender
 # Defer importing the optional AI module to runtime to avoid blocking imports (e.g., when openai is not installed)
 initialize_chatbot = None
 is_chatgpt_available = lambda: False
@@ -714,6 +715,100 @@ def ai_chat():
     return jsonify({'success': True, 'response': f"[local] {message}"})
 
 
+@app.route('/api/ai/project-chat', methods=['POST'])
+@login_required
+def ai_project_chat():
+    """Answer questions about this project using project files as context.
+
+    This endpoint builds a compact project context from `README.md`, `docs/`, and
+    key `src/` files (truncated to avoid very large prompts) and sends that
+    context together with the user's question to the AI chatbot.
+    """
+    data = request.get_json() or {}
+    message = data.get('message')
+    if not message:
+        return jsonify({'error': 'No message provided'}), 400
+
+    # Build compact project context
+    project_context = build_project_context()
+
+    prompt = (
+        "You are an assistant with knowledge of the application codebase. "
+        "Use the project context (filenames and short excerpts) to answer the user's question. "
+        "If you refer to code, include filename and short line reference.\n\n"
+        "Project context:\n" + project_context + "\n\nUser question:\n" + message
+    )
+
+    bot = get_chatbot()
+    if bot:
+        try:
+            ai_response = bot.chat(prompt)
+            return jsonify({'success': True, 'response': ai_response})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    # fallback: simple echo with project hint
+    return jsonify({'success': True, 'response': f"[local][project] {message}"})
+
+
+def build_project_context(max_bytes_per_file: int = 4000) -> str:
+    """Collect a compact, truncated view of important project files.
+
+    - Reads `README.md`, top-level `web_app.py`, and files in `src/` and `docs/`.
+    - Truncates each file to `max_bytes_per_file` bytes to avoid huge prompts.
+    - Returns a concatenated string suitable for inclusion in an AI prompt.
+    """
+    parts = []
+    root = os.path.dirname(__file__)
+
+    # Helper to read safely and truncate
+    def read_trunc(path, maxb=max_bytes_per_file):
+        try:
+            with open(path, 'r', encoding='utf-8') as fh:
+                data = fh.read(maxb)
+                # If file longer, indicate truncation
+                try:
+                    fh.seek(0, os.SEEK_END)
+                    full_len = fh.tell()
+                except Exception:
+                    full_len = None
+                if full_len and full_len > len(data):
+                    data += '\n\n... (truncated) ...'
+                return data
+        except Exception:
+            return ''
+
+    # Always include README.md if available
+    readme_path = os.path.join(root, 'README.md')
+    if os.path.exists(readme_path):
+        parts.append('=== README.md ===\n' + read_trunc(readme_path))
+
+    # Include web_app.py (this file) briefly
+    try:
+        parts.append('=== web_app.py (main) ===\n' + read_trunc(os.path.join(root, 'web_app.py')))
+    except Exception:
+        pass
+
+    # Include docs/ markdown files (first few)
+    docs_dir = os.path.join(root, 'docs')
+    if os.path.isdir(docs_dir):
+        for fn in sorted(os.listdir(docs_dir))[:5]:
+            if fn.lower().endswith('.md'):
+                parts.append(f'=== docs/{fn} ===\n' + read_trunc(os.path.join(docs_dir, fn)))
+
+    # Include key src files (limit count)
+    src_dir = os.path.join(root, 'src')
+    if os.path.isdir(src_dir):
+        for fn in sorted(os.listdir(src_dir))[:8]:
+            if fn.endswith('.py'):
+                parts.append(f'=== src/{fn} ===\n' + read_trunc(os.path.join(src_dir, fn)))
+
+    # Return joined context (trim overall length)
+    full = '\n\n'.join([p for p in parts if p])
+    # Final safety cut
+    return full[:32000]
+
+
 @app.route('/api/ai/agenda', methods=['POST'])
 @login_required
 def ai_agenda():
@@ -864,6 +959,25 @@ def ai_translate():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     return jsonify({'success': True, 'translation': _fallback_translate(text, target)})
+
+
+@app.route('/api/ai/recommendations', methods=['GET'])
+@login_required
+def ai_recommendations():
+    """Return booking recommendations based on the user's past events."""
+    try:
+        # Optional query params
+        lookback = int(request.args.get('lookback_days', 90))
+        max_items = int(request.args.get('max_items', 5))
+
+        service = get_calendar_service()
+        if not service:
+            return jsonify({'error': 'Not authenticated'}), 401
+
+        recs = recommender.get_recommendations_for_service(service, lookback_days=lookback, max_items=max_items)
+        return jsonify({'success': True, 'recommendations': recs})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

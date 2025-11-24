@@ -573,14 +573,21 @@ async function callAiChat() {
     document.getElementById('ai-response').innerText = 'Thinking...';
 
     try {
-        const res = await fetch(`${API_BASE}/ai/chat`, {
+        // If user prefixes message with "project:", forward to project-aware endpoint
+        const isProject = /^project:\s*/i.test(input);
+        const payload = { message: isProject ? input.replace(/^project:\s*/i, '') : input };
+        const endpoint = isProject ? `${API_BASE}/ai/project-chat` : `${API_BASE}/ai/chat`;
+
+        const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: input })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (res.ok && data.success) {
             document.getElementById('ai-response').innerText = data.response;
+            // Speak AI response for accessibility
+            try { speakText(data.response); } catch (e) { console.warn('TTS failed:', e); }
         } else {
             document.getElementById('ai-response').innerText = data.error || 'AI error';
         }
@@ -621,6 +628,36 @@ async function callAiAgenda() {
             }
         } else {
             document.getElementById('ai-response').innerText = data.error || 'AI error';
+        }
+    } catch (err) {
+        document.getElementById('ai-response').innerText = err.message;
+    }
+}
+
+async function callAiRecommend() {
+    document.getElementById('ai-response').innerText = 'Fetching recommendations...';
+    try {
+        const res = await fetch(`${API_BASE}/ai/recommendations`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+            const recs = data.recommendations || [];
+            if (!recs.length) {
+                document.getElementById('ai-response').innerText = 'No recommendations available.';
+                speakText('No recommendations available.');
+                return;
+            }
+            // Format output
+            let out = '';
+            recs.forEach((r, idx) => {
+                out += `${idx+1}. ${r.summary} — ${r.count} times, usually on ${r.weekday} at ${r.common_time}\n`;
+                if (r.suggested_slots && r.suggested_slots.length) {
+                    out += `   Suggested slots: ${r.suggested_slots.join(', ')}\n`;
+                }
+            });
+            document.getElementById('ai-response').innerText = out;
+            try { speakText('I recommend the following bookings. ' + recs.map(r => `${r.summary} on ${r.weekday} at ${r.common_time}`).join('. ')); } catch(e){console.warn('TTS failed', e)}
+        } else {
+            document.getElementById('ai-response').innerText = data.error || 'Recommendation error';
         }
     } catch (err) {
         document.getElementById('ai-response').innerText = err.message;
