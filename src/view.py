@@ -74,9 +74,9 @@ def view_student_event(service, username):
             print(f"An error occurred: {e}")
 
 
-def view_code_clinics(service):
+def view_upcoming_events(service):
     """
-    Retrieves and displays upcoming events from the shared calendar.
+    Retrieves and displays upcoming events from the user's calendar.
 
     Parameters:
     - service: An authenticated Google Calendar service object.
@@ -87,7 +87,7 @@ def view_code_clinics(service):
     Raises:
     None
 
-    This function retrieves upcoming events from the shared calendar using the provided Google Calendar service object.
+    This function retrieves upcoming events from the user's calendar using the provided Google Calendar service object.
     It then displays the retrieved events to the console. If no events are found, a message indicating the absence of
     upcoming events is printed.
 
@@ -96,12 +96,12 @@ def view_code_clinics(service):
     # Authenticate the user and obtain Google Calendar service object
     service = authenticate()
 
-    # View upcoming shared calendar events
-    view_code_clinics(service)
+    # View upcoming calendar events
+    view_upcoming_events(service)
     ```
     """
     try:
-            # Get the shared calendar (primary calendar)
+            # Get the user's primary calendar
             calenderId='primary'
             # Define parameters for the events list request
             events_result = service.events().list(calendarId=calenderId).execute()
@@ -118,6 +118,11 @@ def view_code_clinics(service):
             display_events_prettytable(events)
     except Exception as e:
             print("Error:", e)
+
+
+def view_code_clinics(service):
+    """Deprecated: Use view_upcoming_events instead."""
+    return view_upcoming_events(service)
 
 
 def display_events_prettytable(events):

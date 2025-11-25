@@ -165,7 +165,7 @@ Remember: You're helping a student/user manage their academic or professional ca
         Get AI suggestions for optimal meeting times.
         
         Parameters:
-        - meeting_type: Type of meeting (e.g., "code clinic", "study group", "consultation")
+        - meeting_type: Type of meeting (e.g., "team meeting", "study group", "consultation")
         - duration_minutes: How long the meeting should be
         
         Returns:
@@ -318,7 +318,7 @@ if __name__ == "__main__":
         
         # Test meeting suggestions
         print("Testing meeting suggestions...")
-        response = bot.suggest_meeting_time("code clinic session", 60)
+        response = bot.suggest_meeting_time("team meeting", 60)
         print(f"\n[AI] {response}\n")
         
         print("✅ ChatGPT integration working correctly!")

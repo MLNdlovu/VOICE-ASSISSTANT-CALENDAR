@@ -107,7 +107,7 @@ def display_events_prettytable(events):
     ```
     # Display events in a formatted PrettyTable
     events = [
-        {"start": {"dateTime": "2024-03-01T10:00:00Z"}, "summary": "Code Clinic Session", "creator": {"email": "example@example.com"}},
+        {"start": {"dateTime": "2024-03-01T10:00:00Z"}, "summary": "Team Meeting", "creator": {"email": "example@example.com"}},
         {"start": {"dateTime": "2024-03-02T11:00:00Z"}, "summary": "Study Group Meeting", "creator": {"email": "another@example.com"}}
     ]
     display_events_prettytable(events)
@@ -179,7 +179,7 @@ def config_command(args):
             # Fallback to module-level build if top-level import is not available
             service = build("calendar", "v3", credentials=credentials)
 
-        # Example: Create or get an existing calendar named "code_clinics_demo"
+        # Example: Create or get an existing calendar named "my_calendar"
         calendar_id =Calendar_ID
         print(f"Calendar '{SHARED_CALENDAR_NAME}' obtained with ID: {calendar_id}")
 
@@ -696,7 +696,7 @@ def main():
                     except Exception:
                         pass
                 else:
-                    # Fallback to code clinics cancellation
+                    # Fallback to event cancellation
                     book.cancel_booking_command(service, argparse.Namespace(username=user_name, start_time=start_datetime))
                     try:
                         voice_handler.speak("Meeting cancelled")

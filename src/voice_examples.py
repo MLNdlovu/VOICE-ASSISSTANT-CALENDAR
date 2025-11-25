@@ -18,7 +18,7 @@ def demo_command_parsing():
         "Booking Commands": [
             "Book a slot on 2024-03-01 at 10:00 for Python help",
             "Schedule a session on March 15th at 2:30 PM studying algorithms",
-            "I want to book a code clinic for data structures",
+            "I want to book a meeting for data structures discussion",
             "Book a session at 10:30 for machine learning",
         ],
         "Cancellation Commands": [
@@ -28,8 +28,8 @@ def demo_command_parsing():
         ],
         "View Commands": [
             "Show me upcoming events",
-            "View code clinics calendar",
-            "List available code clinic slots",
+            "View my calendar events",
+            "Show available meeting slots",
             "What are my upcoming events?",
         ],
         "Help and Configuration": [
@@ -129,7 +129,7 @@ def demo_microphone_status():
     if recognizer.is_available():
         print("✅ Your system is ready for voice input!")
         print("\nYou can use the following voice commands:")
-        print("  • 'python code_clinics_demo.py' to start the application")
+        print("  • 'python voice_assistant_calendar.py' to start the application")
         print("  • Choose 'voice' input when prompted")
         print("  • Speak your commands naturally")
     else:

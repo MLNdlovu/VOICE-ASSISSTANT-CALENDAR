@@ -357,7 +357,7 @@ VOICE COMMANDS:
 🎤 "Cancel my booking on [date] at [time]"
    Cancels an existing booking
 
-🎤 "Show code clinics calendar"
+🎤 "Show my calendar events"
    Displays the shared calendar
 
 SUPPORTED DATE FORMATS:

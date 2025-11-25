@@ -135,7 +135,7 @@ class VoiceCommandParser:
     - "Book a slot on 2024-03-01 at 10:00 for Python help"
     - "Cancel my booking on 2024-03-01 at 10:00"
     - "Show me upcoming events"
-    - "Show code clinics calendar"
+    - "Show my calendar events"
     - "Help"
     """
     
