@@ -27,6 +27,7 @@ import book
 import get_details
 import voice_handler
 import src.recommender as recommender
+from src.scheduler_handler import SchedulerCommandHandler, create_scheduler_endpoints
 # Defer importing the optional AI module to runtime to avoid blocking imports (e.g., when openai is not installed)
 initialize_chatbot = None
 is_chatgpt_available = lambda: False
@@ -978,6 +979,16 @@ def ai_recommendations():
         return jsonify({'success': True, 'recommendations': recs})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# Initialize Smart Scheduler
+try:
+    scheduler_handler = SchedulerCommandHandler()
+    create_scheduler_endpoints(app, scheduler_handler)
+    print("✅ Smart Scheduler initialized and endpoints registered")
+except Exception as e:
+    print(f"⚠️  Smart Scheduler initialization warning: {e}")
+    scheduler_handler = None
 
 
 if __name__ == '__main__':

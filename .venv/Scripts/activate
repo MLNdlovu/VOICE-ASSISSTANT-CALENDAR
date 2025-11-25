@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\Lungelo Ndlovu\Documents\VOICE-ASSISSTANT-CALENDAR\.venv"
+VIRTUAL_ENV="C:\Users\User\Documents\dbn_12_code_clinics-master\.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

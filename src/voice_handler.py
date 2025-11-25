@@ -223,6 +223,102 @@ class VoiceCommandParser:
         r"move\s+the\s+meeting",
     ]
     
+    # Find best time patterns (AI scheduling)
+    FIND_BEST_TIME_PATTERNS = [
+        r"find\s+(?:the\s+)?best\s+time",
+        r"find\s+(?:a\s+)?time\s+for",
+        r"what\s+time\s+(?:should|can)\s+i\s+(?:have|do)",
+        r"when\s+(?:should|can)\s+(?:i|we)\s+(?:meet|do)",
+        r"best\s+time\s+for",
+        r"find\s+availability",
+        r"check\s+(?:my\s+)?availability",
+    ]
+    
+    # Agenda summary patterns
+    AGENDA_PATTERNS = [
+        r"what's?\s+my\s+day\s+(?:looking\s+)?like",
+        r"what\s+do\s+i\s+have\s+(?:today|scheduled)",
+        r"what's?\s+on\s+(?:the\s+)?agenda",
+        r"summarize\s+(?:my\s+)?(?:day|week|month|schedule)",
+        r"give\s+me\s+a\s+(?:day|week|month)\s+summary",
+        r"how\s+(?:busy|packed|full)\s+is\s+(?:my\s+)?(?:day|week)",
+        r"what's?\s+(?:coming\s+)?up\s+(?:today|this\s+week)",
+        r"brief\s+me\s+on\s+(?:today|this\s+week)",
+    ]
+    
+    # AI Pattern & Prediction patterns
+    PATTERN_PATTERNS = [
+        r"analyze\s+(?:my\s+)?(?:schedule|calendar|patterns)",
+        r"(?:what\s+)?patterns?\s+(?:do\s+you\s+see|in\s+my\s+schedule)",
+        r"(?:any\s+)?suggestions?\s+(?:for\s+my\s+schedule|to\s+improve)",
+        r"predict(?:ions?)?\s+(?:for\s+my\s+(?:week|schedule))?",
+        r"(?:detect|find)\s+(?:patterns|opportunities)(?:\s+in\s+my\s+schedule)?",
+        r"(?:what\s+)?should\s+i\s+(?:improve|do|change)",
+        r"(?:smart\s+)?recommendations?\s+(?:for\s+my\s+schedule)?",
+        r"help\s+me\s+(?:optimize|improve|fix)\s+my\s+schedule",
+    ]
+    
+    # Apply prediction/recommendation patterns
+    APPLY_PATTERN_PATTERNS = [
+        r"(?:apply|use|enable|block)(?:\s+my)?\s+learning\s+(?:time|blocks)",
+        r"(?:add|enable)\s+(?:early\s+)?reminders?(?:\s+for\s+early\s+events)?",
+        r"(?:add|block)(?:\s+my)?\s+focus\s+time",
+        r"(?:add|insert)\s+(?:travel\s+)?buffers?(?:\s+between\s+meetings)?",
+        r"(?:schedule|add)\s+breaks?",
+        r"(?:apply|use)\s+(?:that|the)\s+suggestion",
+        r"go\s+ahead\s+(?:with\s+)?(?:that|the\s+recommendation)",
+        r"apply\s+(?:that\s+)?suggestion",
+    ]
+    
+    # Email drafting patterns
+    DRAFT_EMAIL_PATTERNS = [
+        r"(?:draft|write|send)\s+(?:an?\s+)?email",
+        r"(?:draft|write)\s+(?:a\s+)?(?:thank\s+you|thank-you|thanks)",
+        r"(?:draft|write)\s+(?:a\s+)?reminder",
+        r"(?:draft|write)\s+(?:a\s+)?(?:follow-up|follow\s+up)",
+        r"send\s+(?:an?\s+)?email(?:\s+to\s+\w+)?",
+        r"compose\s+(?:an?\s+)?email",
+    ]
+    
+    # Voice sentiment/emotion patterns
+    SENTIMENT_ANALYSIS_PATTERNS = [
+        r"(?:detect|analyze)\s+(?:my\s+)?mood",
+        r"(?:how\s+)?(?:do\s+)?(?:i|am\s+i)\s+(?:sound|seem|look)",
+        r"(?:what\s+)?emotion.*?(?:detecting|sense|feel)",
+        r"stress\s+(?:check|level|analysis)",
+        r"(?:am|i'm|i\s+am)\s+(?:stressed|tired|overwhelmed|anxious)",
+    ]
+    
+    # Mood-based calendar adjustment patterns
+    MOOD_CALENDAR_PATTERNS = [
+        r"(?:if\s+)?(?:i'm|i\s+am|if\s+i'm|if\s+i\s+am)\s+(?:stressed|tired|overwhelmed|anxious).*?(?:shift|move|reduce|lighten|adjust)",
+        r"(?:if\s+)?(?:happy|excited).*?(?:add|schedule|plan|suggest).*?(?:fun|break|event)",
+        r"(?:shift|move|reduce)\s+(?:my\s+)?meetings.*?(?:i'm|i\s+am).*?(?:stressed|tired)",
+        r"(?:lighten|lower)\s+(?:my\s+)?(?:calendar|schedule)\s+(?:load|workload)",
+        r"(?:adjust|tweak)\s+(?:my\s+)?calendar\s+(?:to|for).*?(?:mood|stress|energy)",
+    ]
+    
+    # Task extraction patterns
+    TASK_EXTRACTION_PATTERNS = [
+        r"i\s+(?:must|have\s+to|need\s+to|should)\s+.*?(?:before|by|until)",
+        r"(?:extract|find|identify).*?tasks?",
+        r"(?:what\s+)?(?:tasks|to\s+dos|todos).*?(?:do\s+)?i\s+have",
+        r"remind\s+me\s+to\s+",
+        r"i\s+(?:need|have)\s+to\s+.*?(?:today|tomorrow|this\s+week)",
+        r"(?:can\s+you\s+)?(?:extract|pull)\s+(?:any\s+)?tasks?\s+from\s+(?:my\s+)?(?:message|text)",
+    ]
+    
+    # Multi-turn conversation patterns
+    CONVERSATION_PATTERNS = [
+        r"(?:let's\s+)?(?:schedule|plan|arrange|set\s+up)\s+(?:a|an)\s+(?:meeting|session|call)",
+        r"(?:help\s+me\s+)?(?:schedule|plan|create).*?(?:meeting|event|task)",
+        r"(?:can\s+you\s+)?help\s+me\s+(?:with|arrange)",
+        r"(?:let's\s+)?(?:talk\s+about|discuss|go\s+over)\s+(?:my\s+)?(?:calendar|schedule)",
+        r"(?:walk\s+me\s+through|step\s+by\s+step)",
+        r"(?:let's\s+(?:set\s+)?up|create|make)\s+(?:a\s+)?(?:meeting|event|task)",
+        r"(?:i\s+)?(?:want\s+to|need\s+to|like\s+to)\s+(?:schedule|plan|arrange)",
+    ]
+    
     @staticmethod
     def _match_pattern(text: str, patterns: list) -> bool:
         """Check if text matches any of the given patterns."""
@@ -452,6 +548,55 @@ class VoiceCommandParser:
             summary = VoiceCommandParser.extract_summary(text) or 'Reminder'
             return 'set-reminder', {'date': date_str, 'time': time_str, 'summary': summary}
 
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.FIND_BEST_TIME_PATTERNS):
+            # Find best time for an event: extract duration and search window
+            # e.g., "Find the best time for a 2-hour session sometime next week"
+            import re
+            duration_match = re.search(r"(\d+)\s*[-\s]*(?:hour|hr|minute|min)\b", text, re.IGNORECASE)
+            duration_minutes = 60  # default 1 hour
+            if duration_match:
+                val = int(duration_match.group(1))
+                if re.search(r"hour|hr", duration_match.group(), re.IGNORECASE):
+                    duration_minutes = val * 60
+                else:
+                    duration_minutes = val
+            
+            # Extract search window (next week = 7 days, etc.)
+            search_window_days = 7  # default
+            window_match = re.search(r"(?:next\s+)?(\d+)\s+days?|next\s+week|this\s+week", text, re.IGNORECASE)
+            if window_match:
+                if re.search(r"week", window_match.group(), re.IGNORECASE):
+                    search_window_days = 7
+                else:
+                    search_window_days = int(window_match.group(1))
+            
+            # Extract event description (what they want to do)
+            event_desc = re.sub(r"find\s+(?:the\s+)?best\s+time|for\s+(?:a\s+)?", "", text, flags=re.IGNORECASE).strip()
+            event_desc = event_desc or "Meeting"
+            
+            return 'find-best-time', {
+                'event_description': event_desc,
+                'duration_minutes': duration_minutes,
+                'search_window_days': search_window_days
+            }
+
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.AGENDA_PATTERNS):
+            # Summarize day or week
+            period = 'day'  # default
+            if re.search(r"\bweek\b", text_lower):
+                period = 'week'
+            elif re.search(r"\bmonth\b", text_lower):
+                period = 'month'
+            
+            use_gpt = True  # Use AI enhancement if available
+            if re.search(r"brief|quick|short", text_lower):
+                use_gpt = False  # Quick summary without GPT
+            
+            return 'agenda-summary', {
+                'period': period,
+                'use_gpt': use_gpt
+            }
+
         elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.DECLARE_EVENT_PATTERNS):
             # Declarative statement like "I have a meeting on Friday at 9am"
             date_str, time_str = VoiceCommandParser.extract_datetime(text)
@@ -472,6 +617,89 @@ class VoiceCommandParser:
             if len(parts) > 1:
                 new_date, new_time = VoiceCommandParser.extract_datetime(parts[1])
             return 'reschedule', {'date': orig_date, 'time': orig_time, 'new_date': new_date, 'new_time': new_time}
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.PATTERN_PATTERNS):
+            # Analyze patterns and get predictions
+            return 'predict-patterns', {}
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.APPLY_PATTERN_PATTERNS):
+            # Apply a recommendation from patterns
+            # Extract which category if mentioned
+            category = None
+            if re.search(r"learning", text_lower):
+                category = 'learning_blocks'
+            elif re.search(r"remind", text_lower):
+                category = 'reminder'
+            elif re.search(r"focus", text_lower):
+                category = 'focus_time'
+            elif re.search(r"buffer|travel", text_lower):
+                category = 'travel_time'
+            elif re.search(r"break", text_lower):
+                category = 'break'
+            
+            return 'apply-prediction', {'category': category}
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.DRAFT_EMAIL_PATTERNS):
+            # Extract email type and recipient
+            email_type = 'thank_you'  # default
+            recipient = 'Team'
+            
+            if re.search(r"thank\s+you|thanks", text_lower):
+                email_type = 'thank_you'
+            elif re.search(r"reminder", text_lower):
+                email_type = 'reminder'
+            elif re.search(r"follow.*?up", text_lower):
+                email_type = 'follow_up'
+            elif re.search(r"cancel", text_lower):
+                email_type = 'cancellation'
+            
+            # Try to extract recipient
+            recipient_match = re.search(r"(?:to|for)\s+(\w+)", text_lower)
+            if recipient_match:
+                recipient = recipient_match.group(1).capitalize()
+            
+            return 'draft-email', {
+                'email_type': email_type,
+                'recipient': recipient,
+                'message': text
+            }
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.SENTIMENT_ANALYSIS_PATTERNS):
+            # Analyze emotion/mood
+            return 'analyze-sentiment', {
+                'text': text
+            }
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.MOOD_CALENDAR_PATTERNS):
+            # Adjust calendar based on mood
+            return 'mood-calendar-adjust', {
+                'text': text
+            }
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.TASK_EXTRACTION_PATTERNS):
+            # Extract tasks from conversational text
+            return 'extract-tasks', {
+                'text': text
+            }
+        
+        elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.CONVERSATION_PATTERNS):
+            # Multi-turn conversation (Jarvis-style)
+            # Extract conversation type
+            conv_type = 'qa'  # default
+            if re.search(r"schedule|plan|arrange", text_lower):
+                conv_type = 'scheduling'
+            elif re.search(r"(?:create|make).*?task", text_lower):
+                conv_type = 'task_creation'
+            
+            # Extract or generate conversation ID
+            import uuid
+            conversation_id = f"conv_{uuid.uuid4().hex[:8]}"
+            
+            return 'conversation-turn', {
+                'conversation_id': conversation_id,
+                'text': text,
+                'dialogue_type': conv_type
+            }
         
         elif VoiceCommandParser._match_pattern(text_lower, VoiceCommandParser.CONFIG_PATTERNS):
             return 'config', {}
