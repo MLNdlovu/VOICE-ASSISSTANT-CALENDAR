@@ -1018,6 +1018,194 @@ class SchedulerCommandHandler:
                 'message': str(e)
             }
 
+    def handle_parse_event(self, command_params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Parse natural language event description into structured format.
+        
+        Args:
+            command_params: Dict with 'text' (NL event description)
+            
+        Returns:
+            Dict with parsed event structure
+        """
+        try:
+            text = command_params.get('text', '')
+            if not text:
+                return {'status': 'error', 'message': 'No text provided'}
+            
+            # Parse the natural language event
+            parsed_event = parse_natural_language_event(text)
+            
+            return {
+                'status': 'success',
+                'event': parsed_event,
+                'message': 'Event parsed successfully'
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+    
+    def handle_suggest_times(self, command_params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Suggest best meeting times based on availability.
+        
+        Args:
+            command_params: Dict with 'duration', 'participants', 'constraints'
+            
+        Returns:
+            Dict with suggested time slots
+        """
+        if not self.scheduler:
+            return {'status': 'error', 'message': 'Scheduler not initialized'}
+        
+        try:
+            duration = command_params.get('duration', 60)
+            participants = command_params.get('participants', [])
+            constraints = command_params.get('constraints', {})
+            
+            # Get calendar service
+            if not self.calendar_service:
+                return {'status': 'error', 'message': 'Calendar service not available'}
+            
+            # Get free busy times
+            prefs = SchedulePreferences(
+                duration_minutes=duration,
+                preferred_start_hour=constraints.get('start_hour', 9),
+                preferred_end_hour=constraints.get('end_hour', 17)
+            )
+            
+            suggested_times = self.scheduler.find_optimal_meeting_time(
+                calendar_service=self.calendar_service,
+                duration_minutes=duration,
+                preferences=prefs
+            )
+            
+            return {
+                'status': 'success',
+                'suggested_times': suggested_times,
+                'message': f'Found {len(suggested_times)} suggested time slots'
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+    
+    def handle_summarize(self, command_params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Summarize calendar events or meetings.
+        
+        Args:
+            command_params: Dict with 'events' list or 'event_ids'
+            
+        Returns:
+            Dict with summary information
+        """
+        if not self.agenda_service:
+            return {'status': 'error', 'message': 'Agenda service not initialized'}
+        
+        try:
+            events = command_params.get('events', [])
+            
+            if not events:
+                return {'status': 'error', 'message': 'No events provided'}
+            
+            # Convert to AgendaEvent objects
+            agenda_events = []
+            for event in events:
+                agenda_events.append(AgendaEvent(
+                    event_id=event.get('id', ''),
+                    title=event.get('summary', ''),
+                    description=event.get('description', ''),
+                    start=event.get('start', ''),
+                    end=event.get('end', ''),
+                    attendees=event.get('attendees', [])
+                ))
+            
+            # Generate summary
+            summary = self.agenda_service.generate_executive_summary(agenda_events)
+            
+            return {
+                'status': 'success',
+                'summary': summary,
+                'event_count': len(events),
+                'message': 'Summary generated'
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+    
+    def handle_briefing(self, command_params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate daily briefing with events, predictions, and recommendations.
+        
+        Args:
+            command_params: Dict with optional 'date' or 'use_today'
+            
+        Returns:
+            Dict with briefing information
+        """
+        if not self.agenda_service or not self.scheduler or not self.pattern_service:
+            return {'status': 'error', 'message': 'Services not initialized'}
+        
+        try:
+            # Get today's events from calendar
+            if not self.calendar_service:
+                return {'status': 'error', 'message': 'Calendar service not available'}
+            
+            # Get events for today
+            today = datetime.now().date()
+            start_time = datetime.combine(today, datetime.min.time()).isoformat() + 'Z'
+            end_time = datetime.combine(today, datetime.max.time()).isoformat() + 'Z'
+            
+            results = self.calendar_service.events().list(
+                calendarId='primary',
+                timeMin=start_time,
+                timeMax=end_time,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            
+            events = results.get('items', [])
+            
+            if not events:
+                return {
+                    'status': 'success',
+                    'briefing': 'No events scheduled for today',
+                    'events': [],
+                    'message': 'Daily briefing generated'
+                }
+            
+            # Convert to AgendaEvent objects
+            agenda_events = []
+            for event in events:
+                agenda_events.append(AgendaEvent(
+                    event_id=event.get('id', ''),
+                    title=event.get('summary', ''),
+                    description=event.get('description', ''),
+                    start=event.get('start', {}).get('dateTime', ''),
+                    end=event.get('end', {}).get('dateTime', ''),
+                    attendees=event.get('attendees', [])
+                ))
+            
+            # Generate briefing summary
+            summary = self.agenda_service.generate_executive_summary(agenda_events)
+            
+            # Get pattern predictions
+            predictions = self.pattern_service.detect_patterns(events)
+            
+            return {
+                'status': 'success',
+                'briefing': summary,
+                'events': [
+                    {
+                        'title': e.title,
+                        'start': e.start,
+                        'end': e.end,
+                        'attendees': e.attendees
+                    } for e in agenda_events
+                ],
+                'predictions': predictions,
+                'message': 'Daily briefing generated successfully'
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def _get_action_steps(self, category: str, events: List[Dict]) -> List[str]:
         """Get specific action steps for a prediction category."""
         steps = {
@@ -1295,6 +1483,78 @@ def create_scheduler_endpoints(app, scheduler_handler):
         try:
             data = request.get_json() or {}
             result = scheduler_handler.handle_accessibility_request(data)
+            return jsonify(result), 200 if result.get('status') == 'success' else 400
+        except Exception as e:
+            return jsonify({'error': str(e), 'status': 'error'}), 400
+
+    @app.route('/api/parse_event', methods=['POST'])
+    def parse_event_api():
+        """
+        Parse natural language event description into structured format.
+        
+        POST body:
+        {
+            "text": "Meeting with John tomorrow at 2pm to discuss Q1 strategy"
+        }
+        """
+        try:
+            data = request.get_json() or {}
+            result = scheduler_handler.handle_parse_event(data)
+            return jsonify(result), 200 if result.get('status') == 'success' else 400
+        except Exception as e:
+            return jsonify({'error': str(e), 'status': 'error'}), 400
+
+    @app.route('/api/suggest_times', methods=['POST'])
+    def suggest_times_api():
+        """
+        Suggest best meeting times based on availability.
+        
+        POST body:
+        {
+            "duration": 60,
+            "participants": ["john@example.com", "jane@example.com"],
+            "constraints": {"start_hour": 9, "end_hour": 17}
+        }
+        """
+        try:
+            data = request.get_json() or {}
+            result = scheduler_handler.handle_suggest_times(data)
+            return jsonify(result), 200 if result.get('status') == 'success' else 400
+        except Exception as e:
+            return jsonify({'error': str(e), 'status': 'error'}), 400
+
+    @app.route('/api/summarize', methods=['POST'])
+    def summarize_api():
+        """
+        Summarize calendar events or meetings.
+        
+        POST body:
+        {
+            "events": [
+                {"id": "123", "summary": "Meeting", "description": "...", "start": "...", "end": "...", "attendees": []}
+            ]
+        }
+        """
+        try:
+            data = request.get_json() or {}
+            result = scheduler_handler.handle_summarize(data)
+            return jsonify(result), 200 if result.get('status') == 'success' else 400
+        except Exception as e:
+            return jsonify({'error': str(e), 'status': 'error'}), 400
+
+    @app.route('/api/briefing', methods=['POST'])
+    def briefing_api():
+        """
+        Generate daily briefing with events, predictions, and recommendations.
+        
+        POST body:
+        {
+            "use_today": true
+        }
+        """
+        try:
+            data = request.get_json() or {}
+            result = scheduler_handler.handle_briefing(data)
             return jsonify(result), 200 if result.get('status') == 'success' else 400
         except Exception as e:
             return jsonify({'error': str(e), 'status': 'error'}), 400

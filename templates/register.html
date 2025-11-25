@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Voice Assistant Calendar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .register-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header h1 {
+            color: #7c3aed;
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .register-header p {
+            color: #666;
+            margin: 10px 0 0 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .strength-bar {
+            flex: 1;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .strength-bar-fill.weak {
+            width: 33%;
+            background-color: #ef4444;
+        }
+
+        .strength-bar-fill.medium {
+            width: 66%;
+            background-color: #f59e0b;
+        }
+
+        .strength-bar-fill.strong {
+            width: 100%;
+            background-color: #10b981;
+        }
+
+        .strength-text {
+            min-width: 60px;
+            color: #666;
+        }
+
+        .password-requirements {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .requirement-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-size: 10px;
+            color: white;
+            background-color: #ddd;
+        }
+
+        .requirement.met .requirement-icon {
+            background-color: #10b981;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            color: #10b981;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #7c3aed;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .timezone-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .timezone-select:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #7c3aed;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .submit-button-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1>Create Account</h1>
+            <p>Join our calendar assistant</p>
+        </div>
+
+        <form id="registerForm" novalidate>
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email" aria-required="true">
+                    Email Address <span style="color: #ef4444;">*</span>
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="your@email.com"
+                    required
+                    aria-describedby="emailError"
+                />
+                <div id="emailError" class="error-message" role="alert"></div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password" aria-required="true">
+                    Password <span style="color: #ef4444;">*</span>
+                </label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••"
+                    required
+                    aria-describedby="passwordStrength passwordRequirements"
+                />
+                
+                <!-- Password Strength Indicator -->
+                <div class="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-bar-fill" id="strengthBar"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText">Weak</span>
+                </div>
+
+                <!-- Password Requirements -->
+                <div class="password-requirements" id="passwordRequirements">
+                    <div class="requirement" id="reqLength">
+                        <span class="requirement-icon">✓</span>
+                        <span>At least 8 characters</span>
+                    </div>
+                    <div class="requirement" id="reqUppercase">
+                        <span class="requirement-icon">✓</span>
+                        <span>One uppercase letter</span>
+                    </div>
+                    <div class="requirement" id="reqLowercase">
+                        <span class="requirement-icon">✓</span>
+                        <span>One lowercase letter</span>
+                    </div>
+                    <div class="requirement" id="reqNumber">
+                        <span class="requirement-icon">✓</span>
+                        <span>One number</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+                <label for="confirmPassword" aria-required="true">
+                    Confirm Password <span style="color: #ef4444;">*</span>
+                </label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    placeholder="••••••••"
+                    required
+                    aria-describedby="passwordMatchError"
+                />
+                <div id="passwordMatchError" class="error-message" role="alert"></div>
+            </div>
+
+            <!-- Timezone Field -->
+            <div class="form-group">
+                <label for="timezone" aria-required="false">
+                    Timezone (Optional)
+                </label>
+                <select id="timezone" name="timezone" class="timezone-select">
+                    <option value="UTC">UTC (Coordinated Universal Time)</option>
+                    <option value="America/New_York">Eastern (US & Canada)</option>
+                    <option value="America/Chicago">Central (US & Canada)</option>
+                    <option value="America/Denver">Mountain (US & Canada)</option>
+                    <option value="America/Los_Angeles">Pacific (US & Canada)</option>
+                    <option value="Europe/London">GMT/BST (London)</option>
+                    <option value="Europe/Paris">CET/CEST (Central Europe)</option>
+                    <option value="Asia/Tokyo">JST (Japan)</option>
+                    <option value="Asia/Shanghai">CST (China)</option>
+                    <option value="Australia/Sydney">AEDT (Sydney)</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" aria-label="Create account">
+                <span class="submit-button-container">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="buttonText">Create Account</span>
+                </span>
+            </button>
+
+            <!-- General Error Message -->
+            <div id="generalError" class="error-message" role="alert" style="text-align: center; margin-top: 15px;"></div>
+        </form>
+
+        <!-- Login Link -->
+        <div class="login-link">
+            Already have an account? <a href="/login">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('buttonText');
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password)
+            };
+
+            Object.values(requirements).forEach(met => {
+                if (met) strength++;
+            });
+
+            // Update requirement indicators
+            document.getElementById('reqLength').classList.toggle('met', requirements.length);
+            document.getElementById('reqUppercase').classList.toggle('met', requirements.uppercase);
+            document.getElementById('reqLowercase').classList.toggle('met', requirements.lowercase);
+            document.getElementById('reqNumber').classList.toggle('met', requirements.number);
+
+            // Update strength bar and text
+            const strengthBarFill = strengthBar.querySelector('.strength-bar-fill') || strengthBar;
+            strengthBarFill.className = 'strength-bar-fill';
+            
+            if (strength === 0) {
+                strengthBarFill.classList.add('weak');
+                strengthText.textContent = 'Weak';
+            } else if (strength <= 2) {
+                strengthBarFill.classList.add('weak');
+                strengthText.textContent = 'Weak';
+            } else if (strength <= 3) {
+                strengthBarFill.classList.add('medium');
+                strengthText.textContent = 'Medium';
+            } else {
+                strengthBarFill.classList.add('strong');
+                strengthText.textContent = 'Strong';
+            }
+
+            return strength === 4; // All requirements met
+        }
+
+        // Real-time password validation
+        passwordInput.addEventListener('input', () => {
+            checkPasswordStrength(passwordInput.value);
+            
+            // Clear error on input
+            const passwordMatchError = document.getElementById('passwordMatchError');
+            if (confirmPasswordInput.value) {
+                if (passwordInput.value !== confirmPasswordInput.value) {
+                    passwordMatchError.textContent = 'Passwords do not match';
+                    passwordMatchError.classList.add('show');
+                } else {
+                    passwordMatchError.classList.remove('show');
+                }
+            }
+        });
+
+        // Real-time password match validation
+        confirmPasswordInput.addEventListener('input', () => {
+            const passwordMatchError = document.getElementById('passwordMatchError');
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                passwordMatchError.textContent = 'Passwords do not match';
+                passwordMatchError.classList.add('show');
+            } else {
+                passwordMatchError.classList.remove('show');
+            }
+        });
+
+        // Email validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        emailInput.addEventListener('blur', () => {
+            const emailError = document.getElementById('emailError');
+            if (emailInput.value && !validateEmail(emailInput.value)) {
+                emailError.textContent = 'Please enter a valid email address';
+                emailError.classList.add('show');
+            } else {
+                emailError.classList.remove('show');
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate all fields
+            const generalError = document.getElementById('generalError');
+            
+            // Clear previous errors
+            generalError.classList.remove('show');
+            document.getElementById('emailError').classList.remove('show');
+            document.getElementById('passwordMatchError').classList.remove('show');
+
+            let hasErrors = false;
+
+            // Validate email
+            if (!emailInput.value) {
+                document.getElementById('emailError').textContent = 'Email is required';
+                document.getElementById('emailError').classList.add('show');
+                hasErrors = true;
+            } else if (!validateEmail(emailInput.value)) {
+                document.getElementById('emailError').textContent = 'Please enter a valid email address';
+                document.getElementById('emailError').classList.add('show');
+                hasErrors = true;
+            }
+
+            // Validate password strength
+            if (!passwordInput.value) {
+                generalError.textContent = 'Password is required';
+                generalError.classList.add('show');
+                hasErrors = true;
+            } else if (!checkPasswordStrength(passwordInput.value)) {
+                generalError.textContent = 'Password does not meet requirements';
+                generalError.classList.add('show');
+                hasErrors = true;
+            }
+
+            // Validate password match
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                document.getElementById('passwordMatchError').textContent = 'Passwords do not match';
+                document.getElementById('passwordMatchError').classList.add('show');
+                hasErrors = true;
+            }
+
+            if (hasErrors) {
+                return;
+            }
+
+            // Submit form
+            submitButton.disabled = true;
+            spinner.style.display = 'inline-block';
+            buttonText.textContent = 'Creating Account...';
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailInput.value,
+                        password: passwordInput.value,
+                        timezone: document.getElementById('timezone').value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'success-message show';
+                    successMsg.textContent = 'Account created! Redirecting to login...';
+                    successMsg.setAttribute('role', 'status');
+                    successMsg.style.textAlign = 'center';
+                    form.parentElement.appendChild(successMsg);
+
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    generalError.textContent = data.message || 'Registration failed. Please try again.';
+                    generalError.classList.add('show');
+                    submitButton.disabled = false;
+                    spinner.style.display = 'none';
+                    buttonText.textContent = 'Create Account';
+                }
+            } catch (error) {
+                generalError.textContent = 'An error occurred. Please try again.';
+                generalError.classList.add('show');
+                submitButton.disabled = false;
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Create Account';
+            }
+        });
+
+        // Set timezone to user's local timezone on page load
+        function setDefaultTimezone() {
+            const tzSelect = document.getElementById('timezone');
+            try {
+                const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                if (tzSelect.querySelector(`option[value="${userTz}"]`)) {
+                    tzSelect.value = userTz;
+                }
+            } catch (e) {
+                // Fall back to UTC if detection fails
+                tzSelect.value = 'UTC';
+            }
+        }
+
+        setDefaultTimezone();
+    </script>
+</body>
+</html>

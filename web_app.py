@@ -36,6 +36,15 @@ is_chatgpt_available = lambda: False
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', secrets.token_hex(16))
 
+# Configure session security
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('ENV', 'development') == 'production'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+
+# Get OpenAI model from environment
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo')
+
 # Google OAuth configuration
 SCOPES = [
     # Use the canonical userinfo scopes to match what Google's token endpoint returns
@@ -159,6 +168,92 @@ def logout():
     """Log out user."""
     session.clear()
     return redirect(url_for('login'))
+
+
+@app.route('/register')
+def register():
+    """Show registration page."""
+    if 'access_token' in session:
+        return redirect(url_for('dashboard'))
+    return render_template('register.html')
+
+
+@app.route('/api/auth/register', methods=['POST'])
+def register_api():
+    """Register a new user with local authentication."""
+    try:
+        from src.auth import AuthManager
+        
+        data = request.get_json() or {}
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        timezone = data.get('timezone', 'UTC')
+        
+        if not email or not password:
+            return jsonify({'message': 'Email and password are required'}), 400
+        
+        # Initialize auth manager
+        auth_manager = AuthManager(db_path='app.db')
+        
+        # Register user
+        success, message, user = auth_manager.register_user(email, password, timezone)
+        
+        if not success:
+            return jsonify({'message': message}), 400
+        
+        # Store user info in session
+        session['user_id'] = user.id
+        session['user_email'] = user.email
+        session['timezone'] = user.timezone
+        session['is_local_user'] = True
+        
+        return jsonify({
+            'message': 'Registration successful',
+            'user_id': user.id,
+            'email': user.email
+        }), 201
+    
+    except Exception as e:
+        return jsonify({'message': f'Registration error: {str(e)}'}), 500
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login_api():
+    """Login with email and password."""
+    try:
+        from src.auth import AuthManager
+        
+        data = request.get_json() or {}
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({'message': 'Email and password are required'}), 400
+        
+        # Initialize auth manager
+        auth_manager = AuthManager(db_path='app.db')
+        
+        # Login user
+        success, message, user = auth_manager.login_user(email, password)
+        
+        if not success:
+            return jsonify({'message': message}), 401
+        
+        # Store user info in session
+        session['user_id'] = user.id
+        session['user_email'] = user.email
+        session['timezone'] = user.timezone
+        session['is_local_user'] = True
+        
+        return jsonify({
+            'message': 'Login successful',
+            'user_id': user.id,
+            'email': user.email,
+            'timezone': user.timezone
+        }), 200
+    
+    except Exception as e:
+        return jsonify({'message': f'Login error: {str(e)}'}), 500
 
 
 @app.route('/dashboard')
