@@ -10,6 +10,7 @@ import book
 import get_details
 import voice_handler
 import ai_chatgpt
+from nlu_parser import EventDetailExtractor, MissingDetailPrompter
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -733,37 +734,73 @@ def main():
                         print("❌ Failed to add event")
             
             elif command == "book":
-                # Try to use voice parameters if available
+                # NEW: Use flexible NL parser for booking
+                user_input = ""
+                
+                # If voice parameters provided, use them; otherwise ask for natural language input
+                if voice_params.get('text_input'):
+                    user_input = voice_params['text_input']
+                else:
+                    print("\n📅 What would you like to book?")
+                    print('   Examples: "Friday 2PM meeting with John"')
+                    print('            "movie date with Sarah tomorrow at 3"')
+                    print('            "team standup next Monday 10am"')
+                    try:
+                        user_input = input("You: ").strip()
+                    except EOFError:
+                        user_input = ""
+                
+                if not user_input:
+                    print("❌ No input provided. Please try again.")
+                    continue
+                
+                # Extract details using NL parser
+                extractor = EventDetailExtractor()
+                extracted = extractor.extract_all(user_input)
+                
+                # If details are missing, prompt for them
+                if extracted['missing_keys']:
+                    print(f"\n⚠️  I need more information to complete your booking...")
+                    prompter = MissingDetailPrompter(voice_handler)
+                    extracted = prompter.prompt_missing(extracted['missing_keys'], extracted)
+                
+                # Get user email if not provided
                 if voice_params.get('email'):
-                    user_name = voice_params['email']
+                    user_email = voice_params['email']
                 else:
-                    user_name = get_details.get_email()
+                    user_email = get_details.get_email()
                 
-                if voice_params.get('date') and voice_params.get('time'):
-                    book_date = voice_params['date']
-                    # Convert HH:MM to HH:MM:SS+02:00 format
-                    book_time = voice_params['time'] + ":00+02:00"
-                else:
-                    book_date = get_details.get_date()
-                    book_time = get_details.get_time()
+                # Build event summary
+                summary = extracted['title'] or 'Meeting'
+                if extracted['attendees']:
+                    summary += f" with {', '.join(extracted['attendees'])}"
                 
-                if voice_params.get('summary'):
-                    summary = voice_params['summary']
-                else:
-                    summary = get_details.get_decription()
+                # Format date/time for Google Calendar API
+                book_date = extracted['date']
+                book_time = extracted['time']
                 
-                # Create event in user's primary calendar (replaces book_as_student)
+                if not book_date or not book_time:
+                    print("❌ Could not determine date and time. Please try again.")
+                    continue
+                
+                # Create event in user's primary calendar
                 start_iso = f"{book_date}T{book_time}:00+02:00"
-                created = book.create_event_user(service, calendar_id='primary', email=user_name, start_time_iso=start_iso, summary=summary, duration_minutes=30, reminders=[10])
+                created = book.create_event_user(service, calendar_id='primary', email=user_email, 
+                                                start_time_iso=start_iso, summary=summary, 
+                                                duration_minutes=60, reminders=[10])
                 
                 if created:
-                    print(f"✅ Meeting booked successfully: {summary} on {book_date} at {book_time}")
+                    print(f"✅ Meeting booked successfully!")
+                    print(f"   📍 {summary}")
+                    print(f"   📅 {book_date} at {book_time}")
+                    if extracted['attendees']:
+                        print(f"   👥 Attendees: {', '.join(extracted['attendees'])}")
                     try:
                         voice_handler.speak(f"Meeting booked successfully. {summary} on {book_date} at {book_time}")
                     except Exception:
                         pass
                 else:
-                    print("❌ Failed to create event")
+                    print("❌ Failed to create event. Please try again.")
                     try:
                         voice_handler.speak("Failed to create meeting. Please try again.")
                     except Exception:
