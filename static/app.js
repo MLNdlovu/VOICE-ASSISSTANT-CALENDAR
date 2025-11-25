@@ -1128,4 +1128,130 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.location.hash === '#ai') {
         openAiModal();
     }
+
+    // Chat tab keyboard support
+    document.getElementById('chat-input')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.ctrlKey) {  // Ctrl+Enter to send
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
 });
+
+// ===== AI CHAT TAB FUNCTIONS =====
+
+/**
+ * Add a message to the chat history and display it
+ */
+function addChatMessage(role, content) {
+    const chatHistory = document.getElementById('chat-history');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}-message`;
+    
+    const isAi = role === 'ai';
+    const bgColor = isAi ? 'rgba(66, 165, 245, 0.1)' : 'rgba(76, 175, 80, 0.1)';
+    const borderColor = isAi ? '#42a5f5' : '#4caf50';
+    const icon = isAi ? '🤖' : '👤';
+    const name = isAi ? 'AI Assistant' : 'You';
+    
+    messageDiv.innerHTML = `
+        <div style="background: ${bgColor}; padding: 12px; border-radius: 8px; border-left: 3px solid ${borderColor};">
+            <strong>${icon} ${name}:</strong>
+            <div style="margin-top: 8px; white-space: pre-wrap; word-break: break-word;">${escapeHtml(content)}</div>
+        </div>
+    `;
+    
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;  // Auto-scroll to bottom
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Send a chat message to the AI
+ */
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message) {
+        showToast('Please enter a message', 'warning');
+        return;
+    }
+    
+    // Add user message to chat
+    addChatMessage('user', message);
+    input.value = '';
+    input.style.height = 'auto';  // Reset textarea height
+    
+    // Show loading indicator
+    addChatMessage('ai', '⏳ Thinking...');
+    
+    try {
+        const res = await fetch(`${API_BASE}/ai/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message })
+        });
+        
+        const data = await res.json();
+        
+        // Remove loading message
+        const chatHistory = document.getElementById('chat-history');
+        const lastMsg = chatHistory.lastChild;
+        if (lastMsg && lastMsg.innerText.includes('Thinking')) {
+            lastMsg.remove();
+        }
+        
+        if (res.ok && data.success) {
+            addChatMessage('ai', data.response);
+            // Optional: speak the response
+            try { speakText(data.response); } catch (e) { console.warn('TTS failed:', e); }
+        } else {
+            addChatMessage('ai', '❌ Error: ' + (data.error || 'Failed to get response from AI'));
+        }
+    } catch (err) {
+        // Remove loading message
+        const chatHistory = document.getElementById('chat-history');
+        const lastMsg = chatHistory.lastChild;
+        if (lastMsg && lastMsg.innerText.includes('Thinking')) {
+            lastMsg.remove();
+        }
+        addChatMessage('ai', '❌ Error: ' + err.message);
+    }
+}
+
+/**
+ * Quick action buttons for common chat requests
+ */
+async function quickChatAction(action) {
+    let message = '';
+    
+    switch(action) {
+        case 'suggest':
+            message = 'Please suggest the best times for me to schedule a meeting next week.';
+            break;
+        case 'agenda':
+            message = 'Generate an agenda and action items for my meetings today.';
+            break;
+        case 'summary':
+            message = 'Summarize my schedule for this week and highlight busy periods.';
+            break;
+        case 'email':
+            message = 'Draft a professional follow-up email for my last meeting.';
+            break;
+    }
+    
+    if (message) {
+        document.getElementById('chat-input').value = message;
+        await sendChatMessage();
+    }
+}
+
