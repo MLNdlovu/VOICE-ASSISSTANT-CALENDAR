@@ -95,27 +95,18 @@ def login_required(f):
 
 @app.route('/')
 def index():
-    """Home page - redirect to dashboard if logged in, else login page."""
+    """Home page - redirect to dashboard if logged in, else auth page."""
     if 'access_token' in session:
-        return redirect(url_for('dashboard'))
-    return render_template('login.html')
+        return redirect(url_for('unified_dashboard'))
+    return render_template('auth.html')
 
 
-@app.route('/login')
-def login():
-    """Show login page with OAuth button."""
-    if 'access_token' in session:
-        return redirect(url_for('dashboard'))
-    
-    # If user clicked OAuth button, this handles it
-    if request.args.get('code'):
-        return oauth_callback()
-    
-    # Default: show login page (user clicks Google OAuth button there)
+@app.route('/auth/oauth-start')
+def oauth_start():
+    """Initiate OAuth flow."""
     if not CLIENT_SECRET_FILE:
-        return render_template('login.html', error="Client secret not configured")
+        return "Error: Client secret not configured", 500
     
-    # User clicked the OAuth button - initiate OAuth flow
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRET_FILE,
         scopes=SCOPES,
@@ -126,6 +117,18 @@ def login():
     session['oauth_state'] = state
     
     return redirect(auth_url)
+
+
+@app.route('/login')
+def login():
+    """Show login/registration page."""
+    if 'access_token' in session:
+        return redirect(url_for('unified_dashboard'))
+    
+    if not CLIENT_SECRET_FILE:
+        return render_template('auth.html', error="Client secret not configured")
+    
+    return render_template('auth.html')
 
 
 @app.route('/oauth/callback')
@@ -156,11 +159,40 @@ def oauth_callback():
         user_info = service.userinfo().get().execute()
         session['user_email'] = user_info.get('email')
         
-        return redirect(url_for('dashboard'))
+        # Check for registration data in query params or show profile completion page
+        return render_template('oauth_callback.html')
     
     except Exception as e:
         print(f"OAuth error: {e}")
         return f"Authentication failed: {str(e)}", 400
+
+
+@app.route('/api/complete-profile', methods=['POST'])
+@login_required
+def complete_profile():
+    """Complete user profile with name, surname, and trigger."""
+    try:
+        data = request.get_json() or {}
+        
+        session['user_firstname'] = data.get('firstname', 'User').strip()
+        session['user_lastname'] = data.get('lastname', '').strip()
+        user_trigger = data.get('trigger', 'XX00').strip().upper()
+        
+        # Validate trigger format
+        import re
+        if not re.match(r'^[A-Z]{2}[0-9]{2}$', user_trigger):
+            return jsonify({'error': 'Invalid trigger format. Must be 2 letters + 2 numbers'}), 400
+        
+        session['user_trigger'] = user_trigger
+        session.modified = True
+        
+        return jsonify({
+            'success': True,
+            'message': f'Profile completed! Your trigger is {user_trigger}'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/logout')
@@ -170,11 +202,27 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/unified')
+@login_required
+def unified_dashboard():
+    """Unified dashboard combining AI chat and booking."""
+    user_email = session.get('user_email', 'User')
+    user_name = session.get('user_firstname', 'Welcome')
+    user_surname = session.get('user_lastname', '')
+    user_trigger = session.get('user_trigger', 'SET')
+    
+    return render_template('unified_dashboard.html',
+                         user_name=user_name,
+                         user_surname=user_surname,
+                         user_email=user_email,
+                         user_trigger=user_trigger)
+
+
 @app.route('/register')
 def register():
     """Show registration page."""
     if 'access_token' in session:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('unified_dashboard'))
     return render_template('register.html')
 
 
@@ -418,6 +466,62 @@ def book_event():
             return jsonify({'success': True, 'event_id': created, 'message': f'✅ Event booked: {summary} on {parsed_date} at {time}', 'speak': True, 'speak_text': speak_text})
         else:
             return jsonify({'error': 'Failed to create event'}), 500
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/set-reminder', methods=['POST'])
+@login_required
+def set_reminder():
+    """Set a reminder for a specific time."""
+    try:
+        data = request.get_json()
+        
+        email = data.get('email') or session.get('user_email')
+        date = data.get('date')
+        time = data.get('time')
+        summary = data.get('summary', 'Reminder')
+        reminder_minutes = data.get('reminder_minutes', 0)
+        
+        if not all([email, date, time]):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Parse date/time
+        try:
+            from dateutil import parser as date_parser
+            parsed_date = date_parser.parse(date).strftime('%Y-%m-%d')
+        except Exception:
+            parsed_date = date
+        
+        start_iso = f"{parsed_date}T{time}:00+02:00"
+        
+        service = get_calendar_service()
+        if not service:
+            return jsonify({'error': 'Not authenticated'}), 401
+        
+        # Create reminder as a calendar event
+        created = book.create_event_user(
+            service,
+            calendar_id='primary',
+            email=email,
+            start_time_iso=start_iso,
+            summary=f"🔔 {summary}",
+            duration_minutes=5,  # Short duration for reminders
+            reminders=[reminder_minutes] if reminder_minutes > 0 else [5]
+        )
+        
+        if created:
+            speak_text = f'Reminder set for {summary} on {parsed_date} at {time}'
+            return jsonify({
+                'success': True,
+                'event_id': created,
+                'message': f'🔔 Reminder set: {summary} on {parsed_date} at {time}',
+                'speak': True,
+                'speak_text': speak_text
+            })
+        else:
+            return jsonify({'error': 'Failed to create reminder'}), 500
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -1085,6 +1189,122 @@ except Exception as e:
     print(f"⚠️  Smart Scheduler initialization warning: {e}")
     scheduler_handler = None
 
+
+# ============================================================================
+# Voice Assistant API Endpoints
+# ============================================================================
+
+# Import voice modules
+try:
+    from src.voice_engine import VoiceEngine, get_voice_engine, reset_voice_engine
+    from src.command_processor import CommandProcessor, CommandType
+    from src.calendar_conflict import ConflictDetector, TimeSlot
+    from src.conversation_logger import ConversationLogger, ConversationLog
+    VOICE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️  Voice modules not fully available: {e}")
+    VOICE_AVAILABLE = False
+
+# Global instances
+_conversation_logger = None
+_command_processor = None
+
+
+def get_logger():
+    """Get or create conversation logger"""
+    global _conversation_logger
+    if _conversation_logger is None:
+        _conversation_logger = ConversationLogger()
+    return _conversation_logger
+
+
+def get_processor():
+    """Get or create command processor"""
+    global _command_processor
+    if _command_processor is None:
+        _command_processor = CommandProcessor()
+    return _command_processor
+
+
+@app.route('/api/voice/start', methods=['POST'])
+@login_required
+def voice_start():
+    """Initialize voice assistant session"""
+    try:
+        user_trigger = session.get('user_trigger', 'XX00')
+        user_name = session.get('user_firstname', 'User')
+        user_id = session.get('user_email', 'unknown')
+        
+        session_id = f"{user_id}_{int(datetime.now().timestamp())}"
+        session['voice_session_id'] = session_id
+        
+        logger = get_logger()
+        logger.start_session(session_id, user_id, device='web')
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'user_trigger': user_trigger,
+            'user_name': user_name
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/voice/process-command', methods=['POST'])
+@login_required
+def voice_process_command():
+    """Process voice command"""
+    try:
+        import time
+        start_time = time.time()
+        
+        data = request.get_json() or {}
+        user_text = data.get('text', '').strip()
+        
+        if not user_text:
+            return jsonify({'error': 'No text provided'}), 400
+        
+        processor = get_processor()
+        command = processor.parse_command(user_text)
+        
+        response = {
+            'success': True,
+            'command_type': command.type.value,
+            'confidence': command.confidence,
+            'parameters': command.parameters,
+            'response_time_ms': (time.time() - start_time) * 1000
+        }
+        
+        if command.type == CommandType.BOOK_MEETING:
+            response['message'] = 'I can help you book a meeting.'
+        elif command.type == CommandType.LIST_EVENTS:
+            response['message'] = 'Retrieving your calendar events.'
+        elif command.type == CommandType.SET_REMINDER:
+            response['message'] = 'I can set that reminder for you.'
+        else:
+            response['message'] = 'I understand.'
+        
+        return jsonify(response)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/voice/end-session', methods=['POST'])
+@login_required
+def voice_end_session():
+    """End voice session"""
+    try:
+        session_id = session.get('voice_session_id')
+        
+        if session_id:
+            logger = get_logger()
+            logger.end_session(session_id)
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("🌐 Starting Voice Assistant Calendar Web Server...")

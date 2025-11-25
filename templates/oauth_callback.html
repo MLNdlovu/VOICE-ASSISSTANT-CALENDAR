@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completing Setup...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e0e0e0;
+        }
+
+        .callback-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .spinner {
+            border: 4px solid rgba(66, 165, 245, 0.1);
+            border-top: 4px solid #42a5f5;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #b3e5fc;
+        }
+
+        .profile-form {
+            text-align: left;
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(255,255,255,0.08);
+            border-color: #42a5f5;
+            box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.2);
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            color: white;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 165, 245, 0.4);
+        }
+
+        .btn-skip {
+            background: rgba(255,255,255,0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-skip:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .error-message {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #ef5350;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        .info-text strong {
+            color: #42a5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="callback-container">
+        <div class="spinner" id="spinner"></div>
+        <p class="status-text" id="status-text">Getting you set up...</p>
+
+        <div class="profile-form" id="profile-form">
+            <h2 style="margin-bottom: 24px; font-size: 24px;">Complete Your Profile</h2>
+            
+            <div class="error-message" id="error-message"></div>
+
+            <form id="profile-form-element" onsubmit="submitProfile(event)">
+                <div class="form-group">
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" placeholder="e.g., Ellen" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastname">Last Name</label>
+                    <input type="text" id="lastname" placeholder="e.g., Smith" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="trigger">Voice Trigger (2 letters + 2 numbers)</label>
+                    <input type="text" id="trigger" placeholder="e.g., EL25" maxlength="4" 
+                           pattern="[A-Za-z]{2}[0-9]{2}" required>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="btn-continue">Continue</button>
+                    <button type="button" class="btn-skip" onclick="skipAndContinue()">Skip</button>
+                </div>
+            </form>
+
+            <p class="info-text">
+                <strong>Voice Trigger:</strong> This is your personal wake word (e.g., "EL25") that triggers the voice assistant. 
+                You'll use this to command the system.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Check if localStorage has registration data
+        window.addEventListener('load', function() {
+            const firstname = localStorage.getItem('user_firstname');
+            const lastname = localStorage.getItem('user_lastname');
+            const trigger = localStorage.getItem('user_trigger');
+
+            // Pre-fill form if data exists
+            if (firstname) document.getElementById('firstname').value = firstname;
+            if (lastname) document.getElementById('lastname').value = lastname;
+            if (trigger) document.getElementById('trigger').value = trigger;
+
+            // Show form after 1 second
+            setTimeout(() => {
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('status-text').style.display = 'none';
+                document.getElementById('profile-form').style.display = 'block';
+            }, 1000);
+        });
+
+        async function submitProfile(e) {
+            e.preventDefault();
+
+            const firstname = document.getElementById('firstname').value.trim();
+            const lastname = document.getElementById('lastname').value.trim();
+            let trigger = document.getElementById('trigger').value.trim().toUpperCase();
+
+            // Validate trigger
+            if (!/^[A-Z]{2}[0-9]{2}$/.test(trigger)) {
+                showError('Trigger must be 2 letters + 2 numbers (e.g., EL25)');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/complete-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstname,
+                        lastname,
+                        trigger
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // Clear localStorage
+                    localStorage.removeItem('user_firstname');
+                    localStorage.removeItem('user_lastname');
+                    localStorage.removeItem('user_trigger');
+
+                    // Show success and redirect
+                    document.getElementById('profile-form').innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                            <h2 style="margin-bottom: 12px;">Profile Complete!</h2>
+                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+                                Welcome, ${firstname}! Your trigger is <strong style="color: #42a5f5;">${trigger}</strong>
+                            </p>
+                            <p style="color: rgba(255,255,255,0.5); font-size: 14px;">Redirecting to dashboard...</p>
+                        </div>
+                    `;
+
+                    setTimeout(() => {
+                        window.location.href = '/unified';
+                    }, 2000);
+                } else {
+                    showError(data.error || 'Failed to complete profile');
+                }
+            } catch (err) {
+                showError('Network error: ' + err.message);
+            }
+        }
+
+        function skipAndContinue() {
+            // Use default values
+            const defaultTrigger = 'XX00';
+            
+            fetch('/api/complete-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstname: 'User',
+                    lastname: '',
+                    trigger: defaultTrigger
+                })
+            }).then(() => {
+                localStorage.removeItem('user_firstname');
+                localStorage.removeItem('user_lastname');
+                localStorage.removeItem('user_trigger');
+                window.location.href = '/unified';
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
