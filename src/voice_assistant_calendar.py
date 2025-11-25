@@ -68,7 +68,19 @@ def authenticate():
                 print("Refreshing token...")
                 creds.refresh(Request())
             else:
-                client_secret_path = os.path.join(os.getcwd(), ".config", "client_secret_521030747278-6tqlsfcbtv71c7r4p2q1j7m88du0l9h7.apps.googleusercontent.com.json")
+                # Find the client_secret file dynamically
+                config_dir = os.path.join(os.getcwd(), ".config")
+                client_secret_path = None
+                for f in os.listdir(config_dir):
+                    if f.startswith('client_secret') and f.endswith('.json'):
+                        client_secret_path = os.path.join(config_dir, f)
+                        break
+                
+                if not client_secret_path:
+                    print("❌ Error: No client_secret JSON file found in .config/")
+                    print("Please download your OAuth credentials from Google Cloud Console and save to .config/")
+                    return None
+                
                 flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
                 creds = flow.run_local_server(port=0)
 
@@ -298,12 +310,42 @@ def help_command(args):
     help_command(args)
     ```
     """
-    print("Available commands:")
-    print("- help: Display this help message")
-    print("- config: Open the authentication URL in the default web browser")
-    print("- book: Book a slot")
-    print("- cancel-book: Cancel a booking")
-    print("- events: Display the next seven events")
+    print("\n" + "="*70)
+    print("AVAILABLE COMMANDS - Voice Assistant Calendar")
+    print("="*70)
+    
+    print("\n📅 CALENDAR COMMANDS:")
+    print("-" * 70)
+    print("  events              - Show upcoming events for the next 7 days")
+    print("  book                - Book a new meeting/event")
+    print("  cancel-book         - Cancel an existing meeting")
+    print("  reschedule          - Reschedule a meeting to a new date/time")
+    print("  add-event           - Add an event with title and date")
+    print("  set-reminder        - Set a reminder for a specific time")
+    
+    print("\n🤖 AI COMMANDS:")
+    print("-" * 70)
+    print("  ai                  - Ask AI assistant questions about your schedule")
+    print("  suggest             - Get AI suggestions for meeting times")
+    
+    print("\n⚙️ SYSTEM COMMANDS:")
+    print("-" * 70)
+    print("  share               - Instructions for sharing your calendar")
+    print("  config              - Open authentication configuration")
+    print("  help                - Display this help message")
+    print("  exit                - Exit the application")
+    
+    print("\n💡 EXAMPLE VOICE COMMANDS:")
+    print("-" * 70)
+    print('  "What are my events for today?"')
+    print('  "Book a meeting tomorrow at 2 PM"')
+    print('  "Cancel my meeting on Friday at 10 AM"')
+    print('  "Show me my calendar"')
+    print('  "Set a reminder for 3 PM"')
+    print('  "Suggest a good meeting time"')
+    print('  "Help"')
+    
+    print("\n" + "="*70 + "\n")
 
 
 def share_calendar_command(service, args):
@@ -464,6 +506,64 @@ def main():
             
             elif command == "share":
                 share_calendar_command(service, None)
+            
+            elif command == 'suggest':
+                # Get AI meeting time suggestions
+                try:
+                    bot = ai_chatgpt.initialize_chatbot()
+                    if bot:
+                        duration = voice_params.get('duration', 30)
+                        message = f"Suggest 3 good times for a {duration}-minute meeting in the next week"
+                        response = bot.chat(message)
+                        print(f"🕒 Suggested times:\n{response}")
+                        try:
+                            voice_handler.speak(f"Here are suggested meeting times: {response}")
+                        except Exception:
+                            pass
+                    else:
+                        print("AI not configured. Please set OPENAI_API_KEY.")
+                except Exception as e:
+                    print(f"Error getting suggestions: {e}")
+            
+            elif command == 'add-event':
+                # Add a new event with title and description
+                title = voice_params.get('summary') or input("Event title: ").strip()
+                date = voice_params.get('date') or input("Date (YYYY-MM-DD): ").strip()
+                time = voice_params.get('time') or input("Time (HH:MM): ").strip()
+                
+                if title and date and time:
+                    start_iso = f"{date}T{time}:00+02:00"
+                    created = book.create_event_user(service, calendar_id='primary', email=voice_params.get('email') or 'user', start_time_iso=start_iso, summary=title, duration_minutes=60, reminders=[10])
+                    if created:
+                        print(f"✅ Event added: {title} on {date} at {time}")
+                        try:
+                            voice_handler.speak(f"Event added: {title}")
+                        except Exception:
+                            pass
+                    else:
+                        print("❌ Failed to add event")
+                else:
+                    print("Missing event details")
+            
+            elif command == 'set-reminder':
+                # Set a reminder for a specific time
+                reminder_time = voice_params.get('time') or input("Reminder time (HH:MM): ").strip()
+                reminder_message = voice_params.get('message') or input("What should I remind you about? ").strip()
+                
+                if reminder_time and reminder_message:
+                    today = datetime.datetime.now().strftime('%Y-%m-%d')
+                    start_iso = f"{today}T{reminder_time}:00+02:00"
+                    created = book.create_event_user(service, calendar_id='primary', email=voice_params.get('email') or 'user', start_time_iso=start_iso, summary=f"⏰ Reminder: {reminder_message}", duration_minutes=5, reminders=[0])
+                    if created:
+                        print(f"✅ Reminder set for {reminder_time}: {reminder_message}")
+                        try:
+                            voice_handler.speak(f"Reminder set for {reminder_message}")
+                        except Exception:
+                            pass
+                    else:
+                        print("❌ Failed to set reminder")
+                else:
+                    print("Missing reminder details")
 
             elif command == 'ai':
                 # Forward question to ChatGPT and speak the response
