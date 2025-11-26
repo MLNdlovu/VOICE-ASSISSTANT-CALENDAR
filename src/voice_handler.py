@@ -7,6 +7,8 @@ and provides AI voice responses back to the user.
 """
 
 import re
+import os
+import json
 from typing import Optional, Tuple
 from datetime import datetime, timedelta
 try:
@@ -820,6 +822,50 @@ def get_voice_command() -> Tuple[str, dict]:
         print(f"   Parameters: {params}")
     
     return command, params
+
+
+def load_user_profile(email: str) -> dict:
+    """
+    Load a user profile from `.config/profiles/<email>.json` if available.
+
+    Returns a dict with keys: 'firstname', 'lastname', 'trigger', 'email'
+    If not found, returns an empty dict.
+    """
+    try:
+        profiles_dir = os.path.join('.config', 'profiles')
+        profile_path = os.path.join(profiles_dir, f"{email}.json")
+        if os.path.exists(profile_path):
+            with open(profile_path, 'r', encoding='utf-8') as pf:
+                data = json.load(pf)
+                return data
+    except Exception as e:
+        print(f"[WARN] Failed to load profile for {email}: {e}")
+    return {}
+
+
+def get_user_trigger(email: Optional[str] = None) -> str:
+    """
+    Retrieve the user's custom trigger code.
+
+    Priority:
+    1. If `email` provided and profile exists on disk, return profile['trigger']
+    2. Environment variable `USER_EMAIL` if set and profile exists
+    3. Fallback to default trigger 'XX00'
+    """
+    try:
+        if email:
+            profile = load_user_profile(email)
+            if profile and profile.get('trigger'):
+                return profile.get('trigger')
+
+        env_email = os.environ.get('USER_EMAIL')
+        if env_email:
+            profile = load_user_profile(env_email)
+            if profile and profile.get('trigger'):
+                return profile.get('trigger')
+    except Exception:
+        pass
+    return 'XX00'
 
 
 # Global voice output instance
