@@ -7,10 +7,10 @@
     <title>Voice Assistant Calendar - Web Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body role="application" aria-label="Voice Assistant Calendar Application">
     <div class="container">
         <!-- Hero Section -->
-        <section class="hero">
+        <section class="hero" aria-label="Welcome section">
             <div class="hero-content">
                 <div class="hero-icon">🗓️</div>
                 <div>
@@ -23,22 +23,24 @@
         <a href="#main-content" class="skip-link">Skip to main content</a>
 
         <!-- Header -->
-        <header class="header" role="banner">
+        <header class="header" role="banner" aria-label="Application header">
             <div class="header-content">
                 <h1>🗓️ Voice Assistant Calendar</h1>
                     <div class="header-right">
                     <span id="user-email" class="user-email" aria-label="Current user">{{ user_email }}</span>
-                    <button id="theme-toggle-btn" class="btn btn-icon" title="Toggle theme" aria-label="Toggle theme">🌗</button>
+                    <button id="theme-toggle-btn" class="btn btn-icon" role="switch" aria-checked="false" aria-label="Toggle color theme (current: dark)">🌗</button>
+                    <button id="accessibility-toggle-btn" class="btn btn-icon" role="switch" aria-checked="false" aria-label="Toggle accessibility mode">♿</button>
                     <button id="compact-toggle-btn" class="btn btn-ghost btn-small" title="Toggle compact view" aria-label="Toggle compact view">Compact</button>
                     <button id="export-all-btn" class="btn btn-ghost" title="Export all events as .ics" aria-label="Export all events">Export All</button>
                     <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost" aria-label="View AI documentation" target="_blank">AI Docs</a>
                     <a href="/logout" class="btn btn-logout" aria-label="Sign out from account">Sign Out</a>
                 <!-- AI Save Confirmation Modal -->
-                <div id="ai-confirm-modal" class="modal" style="display:none;">
+                <div id="ai-confirm-modal" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="ai-confirm-title" aria-describedby="ai-confirm-desc">
                     <div class="modal-content">
-                        <button class="modal-close" onclick="closeAiConfirmModal()">✕</button>
-                        <h3>Save AI Output to Event</h3>
-                        <p style="color: var(--text-secondary);">Preview the content below and choose whether to append or overwrite the existing event description.</p>
+                        <button class="modal-close" onclick="closeAiConfirmModal()" aria-label="Close dialog">✕</button>
+                        <h3 id="ai-confirm-title">Save AI Output to Event</h3>
+                        <p id="ai-confirm-desc" style="color: var(--text-secondary);">Preview the content below and choose whether to append or overwrite the existing event description.</p>
+
                         <div style="margin-top:8px;">
                             <label style="font-weight:600;">Preview</label>
                             <div id="ai-confirm-preview" style="white-space:pre-wrap; background: rgba(255,255,255,0.02); padding:12px; border-radius:8px; margin-top:8px; max-height:260px; overflow:auto; border:1px solid rgba(255,255,255,0.03);"></div>
@@ -61,31 +63,78 @@
         <!-- Main Content -->
         <main class="main-content" id="main-content" role="main">
             <!-- Sidebar Navigation -->
-            <aside class="sidebar" role="navigation" aria-label="Main navigation">
-                <nav class="nav-menu">
-                    <button class="nav-btn active" data-tab="voice" aria-selected="true" aria-controls="voice-tab">
+            <aside class="sidebar" role="complementary" aria-label="Main navigation and settings">
+                <nav class="nav-menu" role="navigation" aria-label="Tab navigation">
+                    <button class="nav-btn active" data-tab="voice" role="tab" aria-selected="true" aria-controls="voice-tab" tabindex="0">
                         🎤 Voice Commands
                     </button>
-                    <button class="nav-btn" data-tab="chat" aria-selected="false" aria-controls="chat-tab">
+                    <button class="nav-btn" data-tab="chat" role="tab" aria-selected="false" aria-controls="chat-tab" tabindex="-1">
                         💬 AI Chat
                     </button>
-                    <button class="nav-btn" data-tab="events" aria-selected="false" aria-controls="events-tab">
+                    <button class="nav-btn" data-tab="events" role="tab" aria-selected="false" aria-controls="events-tab" tabindex="-1">
                         📅 My Events
                     </button>
-                    <button class="nav-btn" data-tab="book">
+                    <button class="nav-btn" data-tab="book" role="tab" aria-selected="false" aria-controls="book-tab" tabindex="-1">
                         ➕ Book Event
                     </button>
-                    <button class="nav-btn" data-tab="commands">
+                    <button class="nav-btn" data-tab="commands" role="tab" aria-selected="false" aria-controls="commands-tab" tabindex="-1">
                         ℹ️ Commands
                     </button>
-                    <button class="nav-btn" data-tab="settings">
+                    <button class="nav-btn" data-tab="settings" role="tab" aria-selected="false" aria-controls="settings-tab" tabindex="-1">
                         ⚙️ Settings
                     </button>
                 </nav>
+
+                <!-- Accessibility Panel -->
+                <div id="accessibility-panel" class="accessibility-panel" style="display: none; margin-top: 20px; padding: 16px; border-top: 1px solid rgba(255,255,255,0.06);">
+                    <h3 style="margin-bottom: 12px; font-size: 14px;">Accessibility Options</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label for="high-contrast-toggle" style="font-size: 14px;">High Contrast</label>
+                            <input type="checkbox" id="high-contrast-toggle" class="accessibility-checkbox" aria-label="Toggle high contrast mode">
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label for="reduce-motion-toggle" style="font-size: 14px;">Reduce Motion</label>
+                            <input type="checkbox" id="reduce-motion-toggle" class="accessibility-checkbox" aria-label="Toggle reduce motion">
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label for="font-size-control" style="font-size: 14px;">Font Size</label>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-ghost btn-small" id="font-size-decrease" aria-label="Decrease font size">A−</button>
+                                <button class="btn btn-ghost btn-small" id="font-size-reset" aria-label="Reset font size to default">Default</button>
+                                <button class="btn btn-ghost btn-small" id="font-size-increase" aria-label="Increase font size">A+</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label for="tts-speed-control" style="font-size: 14px;">TTS Speed</label>
+                            <select id="tts-speed-control" style="background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit; padding:6px; border-radius:4px; font-size:12px;" aria-label="Adjust text-to-speech speed">
+                                <option value="0.75">Slow</option>
+                                <option value="1" selected>Normal</option>
+                                <option value="1.25">Fast</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-ghost" id="start-onboarding-btn" style="font-size: 12px;" aria-label="Start accessibility onboarding tour">🎓 Start Onboarding</button>
+                    </div>
+                </div>
             </aside>
 
             <!-- Content Area -->
             <section class="content">
+                <!-- AI Assistant Bubble (Voice Assistant) -->
+                <div id="assistant-bubble" class="assistant-bubble" role="region" aria-label="Voice Assistant Bubble" aria-live="polite" aria-atomic="true" style="display: none; position: fixed; bottom: 20px; right: 20px; background: rgba(66, 165, 245, 0.1); border: 1px solid #42a5f5; border-radius: 12px; padding: 16px; max-width: 300px; box-shadow: 0 4px 12px rgba(66, 165, 245, 0.2); z-index: 1000;">
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="font-size: 24px;">🤖</span>
+                        <div style="flex: 1;">
+                            <p id="assistant-bubble-text" style="font-size: 14px; line-height: 1.4;"></p>
+                        </div>
+                        <button id="assistant-stop-btn" class="btn btn-ghost btn-small" aria-label="Stop assistant speaking" style="margin-top: -4px;">⏹️</button>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button class="btn btn-ghost btn-small" aria-label="Microphone toggle" role="switch" aria-pressed="false" id="bubble-mic-toggle">🎤</button>
+                        <button class="btn btn-ghost btn-small" aria-label="Close assistant bubble">✕</button>
+                    </div>
+                </div>
+
                 <!-- AI Assistant Card -->
                 <div class="ai-card">
                     <div class="ai-card-left">
@@ -93,22 +142,22 @@
                         <p>Ask the assistant to analyze your schedule, suggest meeting times, generate agendas, or draft emails.</p>
                     </div>
                     <div class="ai-card-right">
-                                <button class="btn btn-primary" type="button" onclick="openAiModal()">Open Assistant</button>
-                                <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost">See AI Features</a>
+                                <button class="btn btn-primary" type="button" onclick="openAiModal()" aria-label="Open AI Assistant">Open Assistant</button>
+                                <a href="/docs/AI_FUNCTIONS.md" class="btn btn-ghost" aria-label="View AI features documentation">See AI Features</a>
                             </div>
                 </div>
 
                 <!-- Voice Commands Tab -->
-                <div class="tab-content active" id="voice-tab">
+                <div class="tab-content active" id="voice-tab" role="tabpanel" aria-labelledby="voice-tab">
                     <h2>🎤 Voice Commands</h2>
                     <p style="margin-bottom: 20px; color: #b3e5fc;">Click the microphone button to speak a command or type text to execute voice commands. Press Enter to execute typed commands.</p>
                     
                     <div class="voice-input-section">
                         <div class="voice-controls">
-                            <button id="voice-record-btn" class="btn btn-primary" onclick="startVoiceInput()" aria-label="Start voice recording">
+                            <button id="voice-record-btn" class="btn btn-primary" onclick="startVoiceInput()" aria-label="Start voice recording" role="button">
                                 🎤 Start Recording
                             </button>
-                            <button id="voice-stop-btn" class="btn btn-danger" onclick="stopVoiceInput()" style="display: none;" aria-label="Stop voice recording">
+                            <button id="voice-stop-btn" class="btn btn-danger" onclick="stopVoiceInput()" style="display: none;" aria-label="Stop voice recording" role="button">
                                 ⏹️ Stop Recording
                             </button>
                         </div>
@@ -119,23 +168,23 @@
                             <button onclick="executeVoiceCommand()" class="btn btn-primary" style="width: 100%;" aria-label="Execute the voice command">Execute Command</button>
                         </div>
                         
-                        <div id="voice-response" style="margin-top: 20px;" role="status" aria-live="polite"></div>
+                        <div id="voice-response" style="margin-top: 20px;" role="status" aria-live="polite" aria-atomic="true"></div>
                     </div>
 
                     <!-- Recent commands removed per user request -->
                     <!-- Floating Action Button for Quick Booking -->
-                    <button class="fab" onclick="document.querySelector('[data-tab=book]').click();" aria-label="Quick Book Event">➕</button>
+                    <button class="fab" onclick="document.querySelector('[data-tab=book]').click();" aria-label="Quick Book Event" role="button">➕</button>
                 </div>
 
                 <!-- AI Chat Tab -->
-                <div class="tab-content" id="chat-tab">
+                <div class="tab-content" id="chat-tab" role="tabpanel" aria-labelledby="chat-tab">
                     <h2>💬 AI Assistant Chat</h2>
                     <p style="margin-bottom: 20px; color: #b3e5fc;">Chat with your AI assistant to get meeting suggestions, summarize events, draft emails, and more. Type your question or request below.</p>
                     
                     <div class="chat-container" style="display: flex; flex-direction: column; height: 500px; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; background: rgba(255,255,255,0.01); overflow: hidden;">
                         <!-- Chat History -->
-                        <div id="chat-history" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <div class="chat-message ai-message" style="text-align: left;">
+                        <div id="chat-history" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;" role="log" aria-live="polite" aria-label="Chat conversation history">
+                            <div class="chat-message ai-message" style="text-align: left;" role="article">
                                 <div style="background: rgba(66, 165, 245, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #42a5f5;">
                                     <strong>🤖 AI Assistant:</strong> Hi! I'm your calendar assistant. I can help you with:
                                     <ul style="margin-top: 8px; padding-left: 20px;">
@@ -161,25 +210,25 @@
                                 </button>
                             </div>
                             <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-                                <button onclick="quickChatAction('suggest')" class="btn btn-ghost btn-small" title="Get meeting time suggestions">💡 Suggest Times</button>
-                                <button onclick="quickChatAction('agenda')" class="btn btn-ghost btn-small" title="Generate agenda for today">📋 Generate Agenda</button>
-                                <button onclick="quickChatAction('summary')" class="btn btn-ghost btn-small" title="Summarize this week">📊 Week Summary</button>
-                                <button onclick="quickChatAction('email')" class="btn btn-ghost btn-small" title="Draft an email">✉️ Draft Email</button>
+                                <button onclick="quickChatAction('suggest')" class="btn btn-ghost btn-small" aria-label="Get meeting time suggestions" role="button">💡 Suggest Times</button>
+                                <button onclick="quickChatAction('agenda')" class="btn btn-ghost btn-small" aria-label="Generate agenda for today" role="button">📋 Generate Agenda</button>
+                                <button onclick="quickChatAction('summary')" class="btn btn-ghost btn-small" aria-label="Summarize this week" role="button">📊 Week Summary</button>
+                                <button onclick="quickChatAction('email')" class="btn btn-ghost btn-small" aria-label="Draft an email" role="button">✉️ Draft Email</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Events Tab -->
-                <div class="tab-content" id="events-tab">
+                <div class="tab-content" id="events-tab" role="tabpanel" aria-labelledby="events-tab">
                     <h2>📅 Upcoming Events</h2>
-                    <div id="events-list" class="events-list">
+                    <div id="events-list" class="events-list" role="region" aria-label="Upcoming events list" aria-live="polite">
                         <p class="loading">Loading events...</p>
                     </div>
                 </div>
 
                 <!-- Book Event Tab -->
-                <div class="tab-content" id="book-tab">
+                <div class="tab-content" id="book-tab" role="tabpanel" aria-labelledby="book-tab">
                     <h2>➕ Book a New Event</h2>
                     <form id="booking-form" class="booking-form">
                         <div class="form-group">
@@ -208,13 +257,13 @@
                             <textarea id="event-description" name="description" rows="3" placeholder="Add notes..."></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">✓ Book Event</button>
+                        <button type="submit" class="btn btn-primary" aria-label="Submit booking form and create event">✓ Book Event</button>
                         <p id="booking-message" class="message"></p>
                     </form>
                 </div>
 
                 <!-- Settings Tab -->
-                <div class="tab-content" id="settings-tab">
+                <div class="tab-content" id="settings-tab" role="tabpanel" aria-labelledby="settings-tab">
                     <h2>⚙️ Settings</h2>
                     <form id="settings-form" class="settings-form">
                         <div class="form-group">
@@ -234,13 +283,13 @@
                             <small>Minutes</small>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                        <button type="submit" class="btn btn-primary" aria-label="Save settings">💾 Save Settings</button>
                         <p id="settings-message" class="message"></p>
                     </form>
                 </div>
 
                 <!-- Commands Tab -->
-                <div class="tab-content" id="commands-tab">
+                <div class="tab-content" id="commands-tab" role="tabpanel" aria-labelledby="commands-tab">
                     <h2>🎤 Voice Commands</h2>
                     <p style="margin-bottom: 20px; color: #b3e5fc;">Use these voice commands to interact with your calendar:</p>
                     
@@ -369,22 +418,24 @@
         </main>
 
         <!-- Footer -->
-        <footer class="footer">
-            <p>💡 Manage your calendar with ease • <a href="https://github.com" target="_blank">GitHub</a></p>
+        <footer class="footer" role="contentinfo" aria-label="Application footer">
+            <p>💡 Manage your calendar with ease • <a href="https://github.com" target="_blank" aria-label="Visit GitHub (opens in new window)">GitHub</a></p>
         </footer>
     </div>
 
+    <script src="{{ url_for('static', filename='accessibility.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <!-- AI Assistant Modal -->
-    <div id="ai-modal" class="modal" style="display:none;">
+    <div id="ai-modal" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title" aria-describedby="ai-modal-desc">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeAiModal()">✕</button>
-            <h3>AI Assistant</h3>
+            <button class="modal-close" onclick="closeAiModal()" aria-label="Close AI Assistant dialog">✕</button>
+            <h3 id="ai-modal-title">AI Assistant</h3>
+            <p id="ai-modal-desc" style="display: none;">Chat with your AI assistant to get meeting suggestions, summarize events, draft emails, and more.</p>
             <textarea id="ai-input" placeholder="Ask the assistant anything about your calendar, or request an agenda..." rows="4" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);"></textarea>
             <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
-                <button class="btn btn-ghost" onclick="callAiChat()">Ask</button>
-                <button class="btn btn-ghost" onclick="callAiRecommend()">Recommend Bookings</button>
-                <button class="btn btn-primary" onclick="callAiAgenda()">Generate Agenda</button>
+                <button class="btn btn-ghost" onclick="callAiChat()" aria-label="Ask AI a question">Ask</button>
+                <button class="btn btn-ghost" onclick="callAiRecommend()" aria-label="Get booking recommendations">Recommend Bookings</button>
+                <button class="btn btn-primary" onclick="callAiAgenda()" aria-label="Generate today's agenda">Generate Agenda</button>
             </div>
             <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
                 <label style="font-size:13px; color:var(--text-secondary);">Translate summary to:</label>
@@ -395,10 +446,31 @@
                     <option value="de">German</option>
                     <option value="pt">Portuguese</option>
                 </select>
-                <button class="btn btn-ghost" onclick="callAiTranslate()">Translate</button>
+                <button class="btn btn-ghost" onclick="callAiTranslate()" aria-label="Translate summary to selected language">Translate</button>
             </div>
             <div id="ai-response" style="margin-top:16px; white-space:pre-wrap;"></div>
         </div>
     </div>
+
+<!-- Voice Assistant UI -->
+<div id="triggerSetting" style="position:fixed;left:20px;bottom:20px;z-index:9998;background:rgba(0,0,0,0.8);padding:12px;border-radius:8px;border:1px solid #7C3AED">
+    <div style="color:#fff;font-size:12px;margin-bottom:8px;font-weight:500">Voice Trigger</div>
+    <input id="triggerInput" placeholder="Set trigger e.g. 'hey nova'" style="width:180px;padding:6px;border-radius:4px;border:none;background:rgba(255,255,255,0.1);color:#fff;margin-bottom:8px;display:block" autocomplete="off">
+    <button id="saveTrigger" style="width:100%;padding:8px;background:#7C3AED;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:500;font-size:11px;">Save (Hidden)</button>
+</div>
+
+<!-- Voice Assistant Script -->
+<script src="{{ url_for('static', filename='js/assistant.js') }}"></script>
+<script>
+document.getElementById('saveTrigger').onclick = async () => {
+    const t = document.getElementById('triggerInput').value.trim();
+    if(!t) { alert('Enter a trigger phrase'); return; }
+    sessionStorage.setItem('user_trigger', t);
+    await fetch('/api/set_trigger', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trigger:t})});
+    alert('✓ Trigger saved and hidden from display.');
+    document.getElementById('triggerInput').value = '';
+};
+</script>
+
 </body>
 </html>

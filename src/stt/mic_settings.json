@@ -1,0 +1,53 @@
+{
+  "vosk_model": {
+    "language": "en-US",
+    "model_path": "/models/vosk_en/",
+    "model_name": "vosk-model-en-us-0.22",
+    "model_url": "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip",
+    "model_size_mb": 50,
+    "auto_download": true
+  },
+  "audio_input": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "chunk_size": 4096,
+    "format": "int16",
+    "device": "default"
+  },
+  "silence_detection": {
+    "threshold_db": -40,
+    "duration_ms": 1500,
+    "pre_silence_padding_ms": 100,
+    "post_silence_padding_ms": 200
+  },
+  "noise_detection": {
+    "enabled": true,
+    "threshold": 0.3,
+    "noise_types": [
+      "low_ambient",
+      "medium_ambient",
+      "high_background",
+      "speech"
+    ],
+    "auto_pause_on_high_noise": true
+  },
+  "recognition": {
+    "confidence_threshold": 0.6,
+    "interim_results": true,
+    "final_results_only": false,
+    "accent_tolerance": 0.8,
+    "timeout_ms": 30000
+  },
+  "preprocessing": {
+    "noise_reduction": true,
+    "volume_normalization": true,
+    "silence_trimming": true,
+    "target_db": -20
+  },
+  "performance": {
+    "max_concurrent_streams": 1,
+    "model_preload_at_startup": true,
+    "cache_recognized_phrases": true,
+    "cache_size": 100
+  }
+}

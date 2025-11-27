@@ -1,0 +1,42 @@
+{
+  "email": "tester@local",
+  "trigger": null,
+  "events": [
+    {
+      "title": "Meeting Demo Integration",
+      "date": "2025-11-27",
+      "iso_time": "14:00",
+      "spoken_time": "14:00",
+      "created_at": "2025-11-26T13:52:17.138601"
+    },
+    {
+      "title": "Meeting Demo Integration",
+      "date": "2025-11-27",
+      "iso_time": "14:00",
+      "spoken_time": "14:00",
+      "created_at": "2025-11-26T14:04:26.817200"
+    },
+    {
+      "title": "Meeting Demo Integration",
+      "date": "2025-11-27",
+      "iso_time": "14:00",
+      "spoken_time": "14:00",
+      "created_at": "2025-11-26T14:05:33.292929"
+    },
+    {
+      "title": "Meeting Demo Integration",
+      "date": "2025-11-27",
+      "iso_time": "14:00",
+      "spoken_time": "14:00",
+      "created_at": "2025-11-26T14:06:54.172898"
+    },
+    {
+      "title": "Meeting Demo Integration",
+      "date": "2025-11-27",
+      "iso_time": "14:00",
+      "spoken_time": "14:00",
+      "created_at": "2025-11-26T14:08:18.982156"
+    }
+  ],
+  "history": []
+}

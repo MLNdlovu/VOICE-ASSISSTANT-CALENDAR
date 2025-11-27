@@ -53,6 +53,11 @@
             margin-bottom: 16px;
         }
 
+        /* Hide chat during voice interactions */
+        .dashboard-panel.voice-active {
+            display: none;
+        }
+
         .chat-message {
             padding: 12px;
             border-radius: 8px;
@@ -273,9 +278,7 @@
                     <span id="user-display" class="user-email" aria-label="Current user">
                         {{ user_name }} {{ user_surname }}
                     </span>
-                    <span id="trigger-display" style="color: #ffc107; font-weight: 600; margin-left: 16px;">
-                        Trigger: {{ user_trigger }}
-                    </span>
+                    <!-- Trigger is intentionally hidden for privacy -->
                     <button id="theme-toggle-btn" class="btn btn-icon" title="Toggle theme">🌗</button>
                     <a href="/logout" class="btn btn-logout">Sign Out</a>
                 </div>
@@ -285,7 +288,7 @@
         <!-- Unified Dashboard -->
         <main class="unified-dashboard">
             <!-- Left Panel: AI Chat -->
-            <div class="dashboard-panel">
+            <div class="dashboard-panel" id="ai-chat-panel">
                 <div class="panel-header">
                     💬 AI Assistant
                 </div>

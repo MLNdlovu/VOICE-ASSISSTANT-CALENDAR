@@ -1,0 +1,48 @@
+{
+  "porcupine": {
+    "access_key": "YOUR_PORCUPINE_ACCESS_KEY",
+    "library_path": "porcupine",
+    "model_type": "porcupine_en",
+    "free_tier": true
+  },
+  "wake_word": {
+    "default_text": "Hey Calendar",
+    "min_words": 1,
+    "max_words": 4,
+    "allowed_characters": "a-zA-Z0-9 "
+  },
+  "model_storage": {
+    "base_path": "/models/wakewords/",
+    "file_extension": ".ppn",
+    "encryption": "porcupine_proprietary",
+    "permissions": "0600"
+  },
+  "sensitivity": {
+    "default": 0.5,
+    "min": 0.0,
+    "max": 1.0,
+    "description": "Higher = more sensitive, more false positives"
+  },
+  "detection": {
+    "sample_rate": 16000,
+    "frame_length": 512,
+    "detection_latency_ms": 15,
+    "confidence_threshold": 0.5
+  },
+  "keyboard_fallback": {
+    "enabled": true,
+    "shortcut": "Ctrl+Space",
+    "fallback_description": "Use keyboard when microphone unavailable"
+  },
+  "performance": {
+    "cpu_usage_percent": 0.1,
+    "memory_mb": 30,
+    "startup_load_time_ms": 500,
+    "max_concurrent_streams": 1
+  },
+  "error_handling": {
+    "auto_reload_on_failure": true,
+    "max_retry_attempts": 3,
+    "retry_delay_ms": 1000
+  }
+}

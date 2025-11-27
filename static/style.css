@@ -895,3 +895,396 @@ body.login-page {
 
 /* End login page styles */
 
+/* ============================= */
+/* ACCESSIBILITY STYLES (E1-E4) */
+/* ============================= */
+
+/* Screen Reader Only Content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Enhanced focus indicators for keyboard navigation */
+*:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #42a5f5;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(66, 165, 245, 0.2);
+}
+
+/* Accessibility Panel Styles */
+.accessibility-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 16px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.accessibility-checkbox {
+    accent-color: #42a5f5;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+/* Onboarding Highlight Effect */
+.onboarding-highlight {
+    box-shadow: 0 0 0 4px rgba(66, 165, 245, 0.4), 
+                0 0 0 8px rgba(66, 165, 245, 0.2) !important;
+    animation: pulse-highlight 2s ease-in-out infinite;
+}
+
+@keyframes pulse-highlight {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(66, 165, 245, 0.4), 
+                    0 0 0 8px rgba(66, 165, 245, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(66, 165, 245, 0.6), 
+                    0 0 0 12px rgba(66, 165, 245, 0.1);
+    }
+}
+
+/* High Contrast Mode */
+body.high-contrast {
+    --text-color: #000000;
+    --text-secondary: #333333;
+    --bg-gradient: #ffffff;
+    --surface-color: #ffffff;
+    --border-color: #000000;
+    --primary-color: #0000ff;
+    --secondary-color: #0000ff;
+    --focus-color: #0000ff;
+}
+
+body.high-contrast button,
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+    border: 2px solid #000000;
+    background: #ffffff !important;
+    color: #000000 !important;
+}
+
+body.high-contrast .btn-primary {
+    background: #0000ff !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast .modal-content {
+    border: 2px solid #000000;
+    background: #ffffff;
+    color: #000000;
+}
+
+/* Reduced Motion Mode */
+body.reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+body.reduce-motion .hero,
+body.reduce-motion .modal,
+body.reduce-motion .toast {
+    animation: none !important;
+}
+
+/* Light Theme */
+body.theme-light {
+    background: var(--light-bg);
+    color: var(--light-text);
+    --bg-gradient: var(--light-bg);
+    --surface-color: var(--light-surface);
+    --text-color: var(--light-text);
+    --text-secondary: #666666;
+    --border-color: var(--light-border);
+}
+
+body.theme-light header,
+body.theme-light main,
+body.theme-light .sidebar {
+    background: var(--light-surface);
+    color: var(--light-text);
+}
+
+body.theme-light button,
+body.theme-light input,
+body.theme-light select,
+body.theme-light textarea {
+    color: var(--light-text);
+    border-color: var(--light-border);
+}
+
+body.theme-light .btn-ghost {
+    color: var(--light-secondary);
+}
+
+body.theme-light .modal-content {
+    background: var(--light-surface);
+    color: var(--light-text);
+    border: 1px solid var(--light-border);
+}
+
+body.theme-light .hero {
+    background: linear-gradient(120deg, #1e88e5 0%, #0d47a1 100%);
+}
+
+/* Font Size Adjustments */
+body {
+    font-size: 16px;
+    transition: font-size 0.2s ease;
+}
+
+/* Tab Navigation - Enhanced Keyboard Support */
+.nav-btn {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.nav-btn[aria-selected="true"] {
+    border-bottom: 3px solid #42a5f5;
+    font-weight: 600;
+}
+
+.nav-btn:focus-visible {
+    outline: 3px solid #42a5f5;
+    outline-offset: -3px;
+}
+
+/* Assistant Bubble Accessibility */
+.assistant-bubble {
+    border: 2px solid #42a5f5 !important;
+    animation: bubblePulse 2s ease-in-out infinite !important;
+}
+
+body.reduce-motion .assistant-bubble {
+    animation: none !important;
+}
+
+@keyframes bubblePulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(66, 165, 245, 0.2);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(66, 165, 245, 0.4);
+    }
+}
+
+/* Modal Dialog - Accessibility */
+.modal {
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    border-radius: 12px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+body.reduce-motion .modal-content {
+    animation: none;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Toast Notifications - Accessibility */
+.toast {
+    border-left: 4px solid;
+    animation: slideInRight 0.3s ease-out;
+}
+
+body.reduce-motion .toast {
+    animation: none;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.toast.info {
+    border-left-color: #42a5f5;
+}
+
+.toast.success {
+    border-left-color: #4caf50;
+}
+
+.toast.error {
+    border-left-color: #f44336;
+}
+
+/* Form Accessibility */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #42a5f5;
+    box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.1);
+}
+
+/* Event Card Accessibility */
+.event-card {
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.event-card:focus-within {
+    border-color: #42a5f5;
+    box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.1);
+}
+
+body.reduce-motion .event-card {
+    transition: none;
+}
+
+/* Skip Link */
+.skip-link:focus {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 10000;
+    background: #0b3d91;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Accessibility */
+@media (max-width: 768px) {
+    .accessibility-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 12px 12px 0 0;
+        max-height: 70vh;
+        overflow-y: auto;
+        z-index: 999;
+    }
+
+    .assistant-bubble {
+        bottom: 80px !important;
+        right: 20px !important;
+        max-width: 280px;
+    }
+}
+
+/* Ensure buttons have minimum touch target size (48x48) */
+button,
+a.btn,
+input[type="button"],
+input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 16px;
+}
+
+/* Ensure interactive elements are not too small */
+.btn-small {
+    min-height: 32px;
+    min-width: 32px;
+    padding: 8px 12px;
+}
+
+/* Print Accessibility */
+@media print {
+    .skip-link,
+    .accessibility-panel,
+    .assistant-bubble,
+    .toast-container {
+        display: none;
+    }
+
+    button {
+        border: 1px solid #000;
+    }
+}
+
+/* Voice Assistant Chat Panel Visibility */
+#ai-chat-panel {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#ai-chat-panel.voice-active {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}

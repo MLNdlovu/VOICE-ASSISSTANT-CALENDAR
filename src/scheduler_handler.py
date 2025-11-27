@@ -3,6 +3,9 @@ Scheduler Handler for Voice Assistant Calendar
 
 Integrates AI Smart Scheduler with voice commands, web endpoints,
 and dashboard rendering.
+
+NOTE: This module has been simplified for web-first architecture.
+Optional AI features (SmartScheduler, sentiment analysis, etc.) are disabled.
 """
 
 import json
@@ -10,16 +13,29 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from flask import session
 
-from src.ai_scheduler import SmartScheduler, SchedulePreferences
 from src.nlu import parse_natural_language_event
-from src.agenda_summary import AgendaSummaryService, AgendaEvent
-from src.ai_patterns import PatternPredictionService
-from src.email_drafter import EventEmailDrafter, EmailService, EmailTone, EmailType
-from src.voice_sentiment import VoiceSentimentAnalyzer, EmotionResponseEngine, EmotionDetection
-from src.task_extractor import TaskExtractor
-from src.conversation_manager import JarvisConversationManager, DialogueType
-from src.visual_calendar import VisualCalendarAnalyzer, CalendarHeatmap
-from src.accessibility import AccessibilityManager, SpeechRate, AccessibilityMode
+
+# Optional AI features - safely disabled for web deployment
+SmartScheduler = None
+SchedulePreferences = None
+AgendaSummaryService = None
+AgendaEvent = None
+PatternPredictionService = None
+EventEmailDrafter = None
+EmailService = None
+EmailTone = None
+EmailType = None
+VoiceSentimentAnalyzer = None
+EmotionResponseEngine = None
+EmotionDetection = None
+TaskExtractor = None
+JarvisConversationManager = None
+DialogueType = None
+VisualCalendarAnalyzer = None
+CalendarHeatmap = None
+AccessibilityManager = None
+SpeechRate = None
+AccessibilityMode = None
 
 try:
     from googleapiclient.discovery import build

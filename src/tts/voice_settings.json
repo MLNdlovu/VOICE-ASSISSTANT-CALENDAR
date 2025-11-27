@@ -1,0 +1,57 @@
+{
+  "default_voice": "female",
+  "default_speed": "normal",
+  "default_engine": "coqui",
+  "fallback_engine": "gtts",
+  "voice_options": {
+    "female": {
+      "name": "Sarah",
+      "engine": "coqui",
+      "pitch": 1.2,
+      "rate": 0.9,
+      "language": "en-US"
+    },
+    "male": {
+      "name": "David",
+      "engine": "coqui",
+      "pitch": 0.8,
+      "rate": 0.95,
+      "language": "en-US"
+    }
+  },
+  "speed_settings": {
+    "slow": {
+      "multiplier": 0.8,
+      "description": "Slow speech for clarity"
+    },
+    "normal": {
+      "multiplier": 1.0,
+      "description": "Default natural speech"
+    },
+    "fast": {
+      "multiplier": 1.2,
+      "description": "Fast speech for efficiency"
+    }
+  },
+  "audio_format": {
+    "sample_rate": 22050,
+    "bit_depth": 16,
+    "channels": 1,
+    "codec": "wav"
+  },
+  "caching": {
+    "enabled": true,
+    "max_size_mb": 100,
+    "ttl_hours": 24
+  },
+  "performance": {
+    "max_concurrent": 3,
+    "timeout_seconds": 30,
+    "chunk_size_ms": 500
+  },
+  "input_validation": {
+    "max_length": 1000,
+    "min_length": 1,
+    "allowed_chars": "a-zA-Z0-9 .,!?'-"
+  }
+}

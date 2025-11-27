@@ -1,0 +1,41 @@
+# Section C: Audio Processing & TTS Module Requirements
+
+## Core Libraries
+
+# STT (Speech-to-Text) - Vosk Offline Model
+vosk>=0.3.32
+
+# TTS (Text-to-Speech) - Coqui TTS
+coqui-tts>=0.13.10
+
+# gTTS (Google TTS) - Fallback
+gTTS>=2.3.2
+
+# Audio Processing
+pydub>=0.25.1
+soundfile>=0.12.1
+sounddevice>=0.4.6
+librosa>=0.10.0
+noisereduce>=2.1.0
+
+# Wake Word Detection
+pvporcupine>=2.2.3
+
+# Audio Utilities
+numpy>=1.24.0
+scipy>=1.10.0
+wave
+struct
+json5>=0.9.10
+
+# Environment
+python-dotenv>=1.0.0
+
+# Web Framework (Already have)
+Flask>=2.3.2
+Flask-Login>=0.6.2
+
+# Existing (Keep from previous)
+requests>=2.31.0
+dateparser>=1.1.8
+python-dateutil>=2.8.2

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Voice Assistant Calendar - Natural voice interaction">
+    <title>Voice Calendar Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='voice-animations.css') }}">
+    <style>
+        /* Voice Interface Layout */
+        .voice-interface {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f3440 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+        }
+
+        .voice-header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .voice-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            gap: 30px;
+        }
+
+        /* Voice Indicator Section */
+        .voice-control-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .voice-status {
+            font-size: 16px;
+            color: #b0b0c0;
+            text-align: center;
+            min-height: 24px;
+        }
+
+        /* Assistant Response Bubble */
+        .assistant-bubble {
+            display: none;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 16px;
+            padding: 20px 24px;
+            max-width: 500px;
+            text-align: center;
+            font-size: 18px;
+            color: #81c784;
+            box-shadow: 0 8px 32px rgba(76, 175, 80, 0.2);
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .assistant-bubble.show {
+            display: block;
+        }
+
+        /* Events Display */
+        .events-display {
+            display: none;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .events-display.show {
+            display: block;
+        }
+
+        .events-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #e0e0e0;
+        }
+
+        .events-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .event-card {
+            background: rgba(66, 165, 245, 0.1);
+            border: 1px solid rgba(66, 165, 245, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .event-title {
+            font-weight: 600;
+            color: #42a5f5;
+        }
+
+        .event-time, .event-date {
+            font-size: 14px;
+            color: #b0b0c0;
+        }
+
+        /* Processing Indicator */
+        .processing-indicator {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            color: #ff9800;
+            font-size: 16px;
+        }
+
+        .processing-indicator.show {
+            display: flex;
+        }
+
+        .processing-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 152, 0, 0.3);
+            border-top: 2px solid #ff9800;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Settings and Controls */
+        .voice-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #b0b0c0;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .modal-body {
+            color: #e0e0e0;
+        }
+
+        /* Settings Modal */
+        .settings-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-label {
+            font-size: 14px;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-slider {
+            width: 100px;
+        }
+
+        /* Trigger Setup Modal */
+        .trigger-input-group {
+            margin-bottom: 20px;
+        }
+
+        .trigger-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #b0b0c0;
+        }
+
+        .trigger-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #e0e0e0;
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .trigger-input:focus {
+            outline: none;
+            border-color: #42a5f5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 165, 245, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #e0e0e0;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Audio elements (hidden) */
+        .audio-elements {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .voice-main {
+                padding: 20px 10px;
+                gap: 20px;
+            }
+
+            .voice-controls {
+                top: 10px;
+                right: 10px;
+            }
+
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .assistant-bubble {
+                padding: 16px 20px;
+                font-size: 16px;
+            }
+
+            .events-display {
+                padding: 16px;
+            }
+        }
+
+        /* Welcome message */
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #b0b0c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="voice-interface">
+        <!-- Header -->
+        <header class="voice-header">
+            <div class="welcome-message">
+                <h1 class="welcome-title">🗓️ Voice Calendar Assistant</h1>
+                <p class="welcome-subtitle">Your natural voice companion for scheduling</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="voice-main">
+            <!-- Voice Control Section -->
+            <div class="voice-control-section">
+                <!-- Voice Indicator -->
+                <div class="voice-indicator idle" id="voiceIndicator">
+                    <div class="voice-pulse-ring"></div>
+                    <div class="voice-pulse-ring"></div>
+                    <div class="voice-pulse-ring"></div>
+                    <div class="voice-indicator-center" id="micButton">
+                        🎤
+                    </div>
+                </div>
+
+                <!-- Status Display -->
+                <div class="voice-status" id="micStatus">
+                    Click the microphone to begin
+                </div>
+
+                <!-- Processing Indicator -->
+                <div class="processing-indicator" id="processingIndicator">
+                    <div class="processing-spinner"></div>
+                    <span>Processing your request...</span>
+                </div>
+            </div>
+
+            <!-- Assistant Response Bubble -->
+            <div class="assistant-bubble" id="assistantBubble">
+                <div id="bubbleContent"></div>
+            </div>
+
+            <!-- Events Display -->
+            <div class="events-display" id="eventsDisplay">
+                <div class="events-title">📅 Your Events</div>
+                <div class="events-list" id="eventsList"></div>
+            </div>
+        </main>
+
+        <!-- Controls -->
+        <div class="voice-controls">
+            <button class="control-btn" id="settingsBtn">⚙️ Settings</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Voice Settings</h2>
+                <button class="modal-close" id="closeSettingsBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <span class="setting-label">Always Listen</span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="alwaysOnToggle">
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Text-to-Speech</span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="enableTTS" checked>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Speech Rate: <span id="rateDisplay">1.05</span></span>
+                        <div class="setting-control">
+                            <input type="range" id="speechRate" class="setting-slider" min="0.5" max="2" step="0.1" value="1.05">
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label">Voice Pitch: <span id="pitchDisplay">1.0</span></span>
+                        <div class="setting-control">
+                            <input type="range" id="speechPitch" class="setting-slider" min="0.5" max="2" step="0.1" value="1.0">
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <button class="btn-secondary" id="changeTriggerBtn">Change Trigger Phrase</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trigger Setup Modal -->
+    <div class="modal" id="triggerSetupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Set Up Your Trigger</h2>
+                <button class="modal-close" id="skipTriggerBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #b0b0c0;">
+                    Choose a unique phrase to activate your voice assistant. Make it something natural that you won't say accidentally.
+                </p>
+                <div class="trigger-input-group">
+                    <label for="triggerInput">Your trigger phrase:</label>
+                    <input type="text" id="triggerInput" class="trigger-input" placeholder="e.g., 'Hey Calendar'">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-primary" id="saveTriggerBtn">Save Trigger</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Trigger Modal -->
+    <div class="modal" id="changeTriggerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Change Trigger Phrase</h2>
+                <button class="modal-close" id="closeTriggerModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="trigger-input-group">
+                    <label for="newTriggerInput">New trigger phrase:</label>
+                    <input type="text" id="newTriggerInput" class="trigger-input" placeholder="e.g., 'Listen Up'">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="cancelNewTriggerBtn">Cancel</button>
+                    <button class="btn-primary" id="confirmNewTriggerBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <div class="audio-elements">
+        <audio id="activationSound" src="{{ url_for('static', filename='sounds/activation.mp3') }}"></audio>
+        <audio id="readySound" src="{{ url_for('static', filename='sounds/ready.mp3') }}"></audio>
+        <audio id="errorSound" src="{{ url_for('static', filename='sounds/error.mp3') }}"></audio>
+    </div>
+
+    <script src="{{ url_for('static', filename='voice-interface.js') }}"></script>
+</body>
+</html>

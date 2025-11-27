@@ -3,10 +3,14 @@ import os.path
 import json
 import webbrowser
 from typing import Optional
+from dotenv import load_dotenv
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+
+# Load environment variables from .env file
+load_dotenv()
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -28,11 +32,11 @@ def authenticate() -> Credentials:
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
 
     if not creds or not getattr(creds, "valid", False):
-        client_file = os.path.join(
+        client_file = os.getenv("GOOGLE_CLIENT_SECRET_FILE", os.path.join(
             os.getcwd(),
             ".config",
             "client_secret_372600977962-5tmobjbt9nv752ajec6tvrigjlfd4lpo.apps.googleusercontent.com.json",
-        )
+        ))
         flow = InstalledAppFlow.from_client_secrets_file(client_file, SCOPES)
         # Open the browser for authorization and run local server to complete flow
         auth_url = flow.authorization_url(prompt='select_account')

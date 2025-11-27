@@ -365,14 +365,14 @@
                 return;
             }
             
-            // For now, store in localStorage and show success
+            // For now, store in sessionStorage and show success (do NOT display trigger)
             // In production, this would call a registration API
-            localStorage.setItem('user_firstname', firstname);
-            localStorage.setItem('user_lastname', lastname);
-            localStorage.setItem('user_email', email);
-            localStorage.setItem('user_trigger', trigger);
-            
-            showSuccess(`✅ Account created! Your voice trigger is: ${trigger}. Now signing in with Google...`);
+            sessionStorage.setItem('user_firstname', firstname);
+            sessionStorage.setItem('user_lastname', lastname);
+            sessionStorage.setItem('user_email', email);
+            sessionStorage.setItem('user_trigger', trigger);
+
+            showSuccess('✅ Account created! Voice trigger saved. Now signing in...');
             
             // After showing success, redirect to Google OAuth
             setTimeout(() => {

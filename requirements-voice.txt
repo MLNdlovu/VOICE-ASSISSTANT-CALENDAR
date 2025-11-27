@@ -11,7 +11,7 @@ prettytable==3.10.0
 
 # Voice Recognition
 SpeechRecognition==3.10.1
-pyaudio==0.2.13
+# pyaudio==0.2.13  # Commented out due to Python 3.13 compatibility issues
 
 # Voice Output (Text-to-Speech)
 pyttsx3==2.90
