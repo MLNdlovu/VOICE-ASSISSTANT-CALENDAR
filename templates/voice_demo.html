@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #42a5f5;
+        }
+
+        header .user-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        header .user-email {
+            color: #90caf9;
+            font-size: 14px;
+        }
+
+        header a {
+            background: #f44336;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        header a:hover {
+            background: #d32f2f;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .assistant-bubble {
+            background: rgba(66, 165, 245, 0.15);
+            border: 2px solid #42a5f5;
+            border-radius: 20px;
+            padding: 30px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 40px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .assistant-bubble.listening {
+            border-color: #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .assistant-bubble.speaking {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .assistant-message {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #90caf9;
+            margin: 0;
+        }
+
+        .listening-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .listening-indicator.active {
+            display: flex;
+        }
+
+        .listening-dot {
+            width: 12px;
+            height: 12px;
+            background: #ffc107;
+            border-radius: 50%;
+            animation: pulse 0.6s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-listen {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: white;
+            border: 2px solid #ffc107;
+        }
+
+        .btn-listen:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ffb300, #f57c00);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-listen:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-listen.recording {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            border-color: #f44336;
+            animation: pulse 0.6s infinite;
+        }
+
+        .btn-stop {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #d32f2f;
+        }
+
+        .transcription {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 14px;
+            color: #b0bec5;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .transcription.interim {
+            color: #81c784;
+            font-style: italic;
+        }
+
+        .error-log {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #ef5350;
+            margin-top: 20px;
+            display: none;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .error-log.active {
+            display: block;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .assistant-bubble {
+                padding: 20px 30px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎤 Voice Assistant</h1>
+        <div class="user-info">
+            <span class="user-email" id="user-display">{{ user_name }}</span>
+            <a href="/logout">Sign Out</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="assistant-bubble" id="assistant-bubble">
+            <p class="assistant-message" id="assistant-message">Initializing...</p>
+            <div class="listening-indicator" id="listening-indicator">
+                <div class="listening-dot"></div>
+                <span>Listening...</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-listen" id="listen-btn" onclick="toggleListening()">🎤 Start Listening</button>
+            <div class="transcription" id="transcription" style="display: none;"></div>
+            <div class="error-log" id="error-log"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>🗓️ Voice Calendar Assistant • Say "book an event", "show my events", or "cancel event"</p>
+    </footer>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            recognitionTimeout: 5000,
+            silenceTimeout: 2000,
+            maxRetries: 3
+        };
+
+        // State
+        let state = {
+            isListening: false,
+            isSpeaking: false,
+            sessionId: null,
+            recognition: null,
+            retries: 0,
+            lastTranscript: ''
+        };
+
+        // Initialize on page load
+        async function initialize() {
+            try {
+                // Start voice session with backend
+                const response = await fetch('/api/voice/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    state.sessionId = data.session_id;
+                    updateUI(data.speak_text);
+                    await speak(data.speak_text);
+                    // Auto-start listening
+                    setTimeout(startListening, 500);
+                } else {
+                    showError('Failed to initialize voice session');
+                }
+            } catch (err) {
+                logError('Initialization error: ' + err.message);
+                updateUI('Connection error. Refresh the page.');
+            }
+        }
+
+        // Get or create Web Speech Recognition
+        function getRecognition() {
+            if (state.recognition) return state.recognition;
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showError('Speech Recognition not supported in this browser');
+                return null;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            state.recognition = recognition;
+            return recognition;
+        }
+
+        // Start listening
+        function startListening() {
+            if (state.isListening || state.isSpeaking) return;
+
+            const recognition = getRecognition();
+            if (!recognition) return;
+
+            state.isListening = true;
+            updateListeningUI(true);
+            document.getElementById('listen-btn').textContent = '⏹️ Stop';
+            document.getElementById('listen-btn').classList.add('recording');
+
+            let transcript = '';
+            let silenceTimer = null;
+
+            recognition.onstart = () => {
+                console.log('[INFO] Listening started');
+            };
+
+            recognition.onresult = (event) => {
+                transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const t = event.results[i][0].transcript;
+                    transcript += t;
+                }
+
+                state.lastTranscript = transcript;
+                const isFinal = event.results[event.results.length - 1].isFinal;
+
+                // Show transcription
+                updateTranscription(transcript, !isFinal);
+
+                // Reset silence timer
+                if (silenceTimer) clearTimeout(silenceTimer);
+                if (isFinal) {
+                    // Process after a short delay
+                    silenceTimer = setTimeout(() => processTranscript(transcript), CONFIG.silenceTimeout);
+                } else {
+                    // Continue listening
+                    silenceTimer = setTimeout(() => {
+                        if (transcript) {
+                            processTranscript(transcript);
+                        }
+                    }, CONFIG.silenceTimeout);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('[ERROR] Recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    updateUI("I didn't catch that. Please speak again.");
+                    setTimeout(startListening, 500);
+                } else {
+                    logError('Speech error: ' + event.error);
+                }
+            };
+
+            recognition.onend = () => {
+                state.isListening = false;
+                updateListeningUI(false);
+                document.getElementById('listen-btn').textContent = '🎤 Start Listening';
+                document.getElementById('listen-btn').classList.remove('recording');
+            };
+
+            try {
+                recognition.start();
+            } catch (err) {
+                logError('Failed to start recognition: ' + err.message);
+                state.isListening = false;
+                updateListeningUI(false);
+            }
+        }
+
+        // Stop listening
+        function stopListening() {
+            if (!state.isListening) return;
+            const recognition = getRecognition();
+            if (recognition) {
+                recognition.stop();
+            }
+            state.isListening = false;
+            updateListeningUI(false);
+            document.getElementById('listen-btn').textContent = '🎤 Start Listening';
+            document.getElementById('listen-btn').classList.remove('recording');
+        }
+
+        // Toggle listening
+        function toggleListening() {
+            if (state.isListening) {
+                stopListening();
+            } else {
+                startListening();
+            }
+        }
+
+        // Process transcribed text
+        async function processTranscript(transcript) {
+            if (!transcript.trim()) return;
+
+            stopListening();
+            document.getElementById('transcription').style.display = 'none';
+
+            try {
+                // Send to backend
+                const response = await fetch('/api/voice/process-command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: transcript })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update UI
+                    updateUI(data.speak_text || data.message);
+                    
+                    // Speak response
+                    await speak(data.speak_text || data.message);
+                    
+                    // Display events if any
+                    if (data.events && data.events.length > 0) {
+                        console.log('[INFO] Events:', data.events);
+                    }
+                    
+                    // Continue listening
+                    setTimeout(startListening, 1000);
+                } else {
+                    showError(data.error || 'Command processing failed');
+                    setTimeout(startListening, 1000);
+                }
+            } catch (err) {
+                logError('Processing error: ' + err.message);
+                updateUI('An error occurred. Please try again.');
+                setTimeout(startListening, 1000);
+            }
+        }
+
+        // Text-to-Speech using browser API
+        async function speak(text) {
+            if (!text) return;
+
+            state.isSpeaking = true;
+
+            // Try browser speechSynthesis first
+            if ('speechSynthesis' in window) {
+                try {
+                    // Cancel any ongoing speech
+                    speechSynthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+
+                    utterance.onend = () => {
+                        state.isSpeaking = false;
+                    };
+
+                    utterance.onerror = (event) => {
+                        console.error('[ERROR] Speech synthesis error:', event.error);
+                        state.isSpeaking = false;
+                    };
+
+                    speechSynthesis.speak(utterance);
+                } catch (err) {
+                    console.error('[ERROR] Speech synthesis failed:', err);
+                    state.isSpeaking = false;
+                }
+            }
+        }
+
+        // Update assistant bubble
+        function updateUI(message) {
+            const bubble = document.getElementById('assistant-bubble');
+            const messageEl = document.getElementById('assistant-message');
+            
+            messageEl.textContent = message;
+            
+            // Update bubble styling based on state
+            if (state.isListening) {
+                bubble.className = 'assistant-bubble listening';
+            } else if (state.isSpeaking) {
+                bubble.className = 'assistant-bubble speaking';
+            } else {
+                bubble.className = 'assistant-bubble';
+            }
+        }
+
+        // Update listening indicator
+        function updateListeningUI(isListening) {
+            const indicator = document.getElementById('listening-indicator');
+            if (isListening) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        // Show transcription
+        function updateTranscription(text, isInterim) {
+            const el = document.getElementById('transcription');
+            el.textContent = text;
+            el.style.display = text ? 'flex' : 'none';
+            
+            if (isInterim) {
+                el.classList.add('interim');
+            } else {
+                el.classList.remove('interim');
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            updateUI('Error: ' + message);
+            logError(message);
+        }
+
+        // Log error to console only
+        function logError(message) {
+            console.error('[ERROR]', message);
+            // Do NOT display in UI - console only
+        }
+
+        // Auto-initialize on load
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>

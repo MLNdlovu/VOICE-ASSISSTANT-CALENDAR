@@ -1,0 +1,56 @@
+VOICE ASSISTANT CALENDAR - DEMO REFERENCE
+==========================================
+
+START SERVER:
+  python web_app.py
+
+OPEN BROWSER:
+  http://localhost:5000
+
+LOGIN:
+  1. Click "Login with Google"
+  2. Complete OAuth flow
+  3. Enter: Name + Trigger (e.g., "John", "JO25")
+  4. Auto-redirects to voice dashboard
+
+DEMO COMMANDS:
+
+  "Book an event"
+    → "What should I name the event?" 
+    → Say: "Team meeting"
+    → "What day is the event?"
+    → Say: "Tomorrow"
+    → "What time should it start?"
+    → Say: "2pm"
+    → ✅ Event created on Google Calendar
+
+  "Show my events for today"
+    → Lists all events with times
+
+  "Show my events for tomorrow"
+    → Tomorrow's events only
+
+  "Show my events for this week"
+    → 7 days of events
+
+  "Cancel my event"
+    → "Which event would you like to cancel?"
+    → Say event name or time
+    → ✅ Event deleted
+
+KEY FEATURES:
+  ✅ Browser Web Speech API (no Whisper delays)
+  ✅ Browser speechSynthesis for TTS
+  ✅ Simple state machine (no fancy NLP)
+  ✅ Real Google Calendar integration
+  ✅ Clean single-bubble UI
+  ✅ Errors logged to console only
+  ✅ No trigger phrase visible
+
+TROUBLESHOOT:
+  - No sound? Check system volume + browser permissions
+  - Speech not working? Try Chrome/Edge
+  - Events not saving? Check Google Calendar API enabled
+  - App crashed? Ctrl+C, then python web_app.py
+
+DEMO TIME: 5 minutes ⏱️

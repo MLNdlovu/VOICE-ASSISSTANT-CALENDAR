@@ -1,0 +1,114 @@
+VOICE ASSISTANT CALENDAR - DEMO INSTRUCTIONS (11/27/2025)
+
+=== DEMO FLOW ===
+
+1. STARTUP
+   - Open http://localhost:5000
+   - Click "Login with Google" or use local auth
+   - Set profile (e.g., Name: "John", Trigger: "JO25")
+   - Auto-redirects to /unified (voice_demo.html)
+
+2. EXPECTED INITIALIZATION
+   - Page shows: "Initializing..."
+   - Backend calls /api/voice/start
+   - Assistant speaks: "I'm ready. How can I help you?"
+   - UI shows: "I'm ready. How can I help you?"
+   - Trigger phrase is INTERNAL ONLY - never displayed
+   - Button changes to "🎤 Start Listening"
+
+3. BOOK AN EVENT
+   - User: "Book an event"
+   - Assistant: "What should I name the event?" (speaks & displays)
+   - User: "Team meeting"
+   - Assistant: "What day is the event?" (speaks & displays)
+   - User: "Tomorrow"
+   - Assistant: "What time should it start?" (speaks & displays)
+   - User: "2pm"
+   - ✅ Event created: "Team meeting" tomorrow at 2pm
+   - Assistant speaks & displays: "Event 'Team meeting' booked successfully."
+   - Resumes listening
+
+4. VIEW EVENTS
+   - User: "Show my events for today"
+   - ✅ Lists events for today with times
+   - Example: "You have 1 event today: Team meeting at 2:00pm"
+
+5. CANCEL EVENT
+   - User: "Cancel my event"
+   - Assistant: "Which event would you like to cancel? Tell me the event name."
+   - (For full demo, would need match by name/time, but interface accepts)
+
+6. ERRORS
+   - ALL errors logged to console ONLY
+   - NOTHING shows error message on UI
+   - Only shows in browser DevTools console
+
+7. UI ELEMENTS
+   - Single floating bubble with assistant message
+   - ONE button: "🎤 Start Listening" / "⏹️ Stop"
+   - Transcription shows live text (hidden when not recording)
+   - Listening indicator (dot animation) when active
+   - Header with user name and logout
+   - Footer with hint: "Say 'book an event', 'show my events', or 'cancel event'"
+
+=== QUICK START COMMANDS ===
+
+Book an event:
+  "Book an event" → "Team meeting" → "Tomorrow" → "2pm"
+
+Show events:
+  "Show events for today"
+  "Show my events for tomorrow"  
+  "Show events for this week"
+
+Cancel event:
+  "Cancel my event" → Select from list
+
+=== KEY FEATURES ✅ ===
+
+✅ Login loads Google Calendar credentials automatically
+✅ Trigger phrase stored internally, NEVER shown on screen
+✅ Simple state machine: booking_name → booking_date → booking_time
+✅ Web Speech API for STT/TTS (no Whisper delays)
+✅ Single assistant bubble interface
+✅ No chat history UI
+✅ Errors console-only
+✅ Events created on Google Calendar
+✅ Clean, minimal UI for demo
+
+=== TROUBLESHOOTING ===
+
+If app won't start:
+  - Check: pip install flask google-auth-oauthlib google-oauth google-api-python-client
+  - Run: python web_app.py
+
+If login fails:
+  - Verify: .config/client_secret_*.json exists
+  - Check: OAUTHLIB_INSECURE_TRANSPORT=1 is set
+
+If voice doesn't work:
+  - Check browser console for errors (F12)
+  - Verify microphone permissions
+  - Try Chrome/Edge (better Web Speech API support)
+
+If events don't save:
+  - Check: Access token in session
+  - Verify: Google Calendar API is enabled in Google Cloud Console
+
+=== DEMO TALKING POINTS ===
+
+1. "This is a voice-first calendar assistant"
+2. "No typing - just speak naturally"
+3. "Booking is simplified: name → date → time"
+4. "Clean interface focuses on voice, not UI"
+5. "Integration with your real Google Calendar"
+6. "State machine handles multi-turn conversations"
+
+=== FILES MODIFIED ===
+
+- src/voice_blueprint.py: Simple state machine for voice commands
+- templates/voice_demo.html: Clean single-bubble interface
+- web_app.py: Redirects /unified to voice_demo.html
+- Session management: trigger phrase stored but never displayed
+
+Total time to demo: < 5 minutes
