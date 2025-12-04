@@ -1,428 +1,299 @@
 /**
- * Voice Assistant with OpenAI GPT
- * Handles trigger phrase detection, voice commands, and single-bubble UI
- * 
- * Features:
- * - Hidden trigger phrase (not displayed in UI)
- * - Continuous listening for trigger detection
- * - Web Speech API for voice recognition
- * - OpenAI GPT for intelligent responses
- * - Single message bubble with auto-disappear
- * - Browser TTS (SpeechSynthesis)
+ * Voice Assistant JavaScript
+ * Handles speech recognition, assistant responses, and calendar integration
  */
 
-const synth = window.speechSynthesis;
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+// Configuration
+const CONFIG = {
+    triggerPhrase: 'hey assistant',
+    apiBaseUrl: '/api',
+    speechLang: 'en-US',
+};
 
-let recognition = null;
-try {
-  recognition = new SpeechRecognition();
-  recognition.interimResults = false;
-  recognition.continuous = false;
-  recognition.lang = 'en-US';
-} catch (e) {
-  console.warn('SpeechRecognition not available', e);
-}
+// State
+let state = {
+    isListening: false,
+    recognition: null,
+    transcript: '',
+};
+
+// DOM Elements
+const assistantBubble = document.getElementById('assistantBubble');
+const startListeningBtn = document.getElementById('startListening');
+const voiceVisualizer = document.querySelector('.voice-visualizer');
+const transcriptDisplay = document.getElementById('transcriptDisplay');
+const manualBookingForm = document.getElementById('manualBookingForm');
+const eventList = document.getElementById('eventList');
 
 /**
- * Speak text using browser SpeechSynthesis with female voice preference
+ * Initialize Speech Recognition
  */
-async function speak(text) {
-  if (!text) return;
-  
-  // Cancel any existing speech
-  synth.cancel();
-  
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1.0;
-  utterance.pitch = 1.2;  // Higher pitch for more feminine voice
-  utterance.volume = 1.0;
-  
-  // Try to select a female voice
-  try {
-    const voices = synth.getVoices();
-    // Look for female voice (prefer Google or Microsoft female voices)
-    const femaleVoice = voices.find(v => 
-      v.name.toLowerCase().includes('female') || 
-      v.name.toLowerCase().includes('woman') ||
-      (v.name.toLowerCase().includes('google') && v.name.toLowerCase().includes('us-en')) ||
-      v.name.toLowerCase().includes('zira')
-    ) || voices.find(v => v.name.toLowerCase().includes('english'));
-    
-    if (femaleVoice) {
-      utterance.voice = femaleVoice;
+function initializeSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        showAssistantMessage('Speech recognition is not supported in your browser.');
+        return;
     }
-  } catch (e) {
-    console.warn('Could not set voice:', e);
-  }
-  
-  synth.speak(utterance);
-  
-  return new Promise(resolve => {
-    utterance.onend = resolve;
-    utterance.onerror = resolve;
-  });
-}
 
-/**
- * Show single assistant message bubble with auto-disappear
- */
-function showBubble(text, timeout = 3500) {
-  let bubble = document.getElementById('assistantBubble');
-  
-  if (!bubble) {
-    bubble = document.createElement('div');
-    bubble.id = 'assistantBubble';
-    bubble.style.cssText = `
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      max-width: 280px;
-      padding: 12px 18px;
-      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
-      color: #fff;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.2);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 9999;
-      font-size: 14px;
-      line-height: 1.4;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      word-wrap: break-word;
-    `;
-    document.body.appendChild(bubble);
-  }
-  
-  bubble.textContent = text;
-  bubble.style.display = 'block';
-  
-  // Speak the text
-  speak(text);
-  
-  // Clear previous timeout
-  if (bubble._timer) clearTimeout(bubble._timer);
-  
-  // Auto-hide after timeout
-  bubble._timer = setTimeout(() => {
-    bubble.style.display = 'none';
-  }, timeout);
-}
+    state.recognition = new SpeechRecognition();
+    state.recognition.continuous = false;
+    state.recognition.interimResults = true;
+    state.recognition.lang = CONFIG.speechLang;
 
-/**
- * Fetch trigger status from server (only returns if it's set, not the actual value)
- */
-async function triggerStatus() {
-  try {
-    const res = await fetch('/api/get_trigger');
-    if (!res.ok) return false;
-    const j = await res.json();
-    return j.trigger_set || false;
-  } catch (e) {
-    console.warn('Error checking trigger status:', e);
-    return false;
-  }
-}
+    state.recognition.onstart = () => {
+        state.isListening = true;
+        startListeningBtn.classList.add('listening');
+        startListeningBtn.textContent = '🛑 Listening...';
+        voiceVisualizer.classList.add('listening');
+        transcriptDisplay.classList.remove('show');
+    };
 
-/**
- * Save trigger phrase to server and client storage
- * Trigger is saved on server but never returned; stored locally for matching
- */
-async function setTrigger(triggerText) {
-  const trigger = triggerText.trim().toLowerCase();
-  if (!trigger) {
-    showBubble('Please enter a trigger phrase.');
-    return;
-  }
-  
-  try {
-    const res = await fetch('/api/set_trigger', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trigger: trigger })
-    });
-    
-    if (!res.ok) {
-      showBubble('Failed to save trigger. Try again.');
-      return;
-    }
-    
-    // Store locally for matching
-    sessionStorage.setItem('user_trigger', trigger);
-    showBubble('✓ Trigger phrase saved. Say it to activate.');
-    
-  } catch (e) {
-    console.error('Error setting trigger:', e);
-    showBubble('Error saving trigger phrase.');
-  }
-}
-
-/**
- * Start continuous listening loop for trigger phrase
- * Uses short listen sessions to avoid resource drain
- */
-function startWakeLoop() {
-  if (!recognition) {
-    console.warn('Speech Recognition not available');
-    return;
-  }
-  
-  recognition.continuous = true;
-  recognition.interimResults = false;
-  
-  recognition.onresult = async (event) => {
-    if (!event.results || event.results.length === 0) return;
-    
-    const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-    const isFinal = event.results[event.results.length - 1].isFinal;
-    
-    if (!isFinal) return;
-    
-    // Check if trigger was detected
-    const triggerSet = await triggerStatus();
-    if (!triggerSet) return;
-    
-    const trigger = sessionStorage.getItem('user_trigger') || '';
-    if (!trigger || !transcript.includes(trigger)) return;
-    
-    console.log('🔔 Trigger detected:', trigger);
-    
-    // Stop listening and activate assistant
-    recognition.stop();
-    await handleVoiceFlow();
-    
-    // Resume listening after brief pause
-    setTimeout(() => {
-      try {
-        recognition.start();
-      } catch (e) {
-        console.warn('Error restarting recognition:', e);
-      }
-    }, 1000);
-  };
-  
-  recognition.onerror = (event) => {
-    console.warn('Recognition error:', event.error);
-    // Auto-restart on error
-    setTimeout(() => {
-      try {
-        recognition.start();
-      } catch (e) {}
-    }, 2000);
-  };
-  
-  recognition.onend = () => {
-    console.log('Recognition ended, restarting...');
-    setTimeout(() => {
-      try {
-        recognition.start();
-      } catch (e) {
-        console.warn('Could not restart recognition:', e);
-      }
-    }, 500);
-  };
-  
-  try {
-    recognition.start();
-    console.log('🎤 Voice assistant listening for trigger...');
-  } catch (e) {
-    console.warn('Could not start recognition:', e);
-  }
-}
-
-/**
- * Main voice interaction flow
- * 1. Greet user
- * 2. Listen for command
- * 3. Send to server for processing
- * 4. Speak response and show bubble
- */
-async function handleVoiceFlow() {
-  console.log('💬 Voice flow activated');
-  
-  // Show greeting
-  showBubble('What can I do for you today?', 6000);
-  
-  // Listen for command (8 second timeout)
-  const command = await listenOnce(8000);
-  
-  if (!command) {
-    showBubble("I didn't catch that. Please repeat.");
-    return;
-  }
-  
-  console.log('📝 Command heard:', command);
-  
-  // Show processing indicator
-  showBubble('Processing...', 2000);
-  
-  // Send to server
-  try {
-    const response = await fetch('/api/voice_cmd', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript: command })
-    });
-    
-    const data = await response.json();
-    
-    if (!data || !data.ok) {
-      showBubble(data?.reply || 'Sorry, I could not process that.');
-      return;
-    }
-    
-    // Show assistant response
-    const assistantText = data.assistant_text || data.reply || 'Done.';
-    showBubble(assistantText);
-    
-    console.log('✓ Response:', assistantText);
-    
-    // If more info needed, listen for follow-up
-    if (data.needs_more_info) {
-      await new Promise(resolve => setTimeout(resolve, 3500)); // Wait for bubble to show
-      
-      const followUp = await listenOnce(8000);
-      if (followUp) {
-        showBubble('Processing...', 2000);
+    state.recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i].transcript;
+            if (event.results[i].isFinal) {
+                state.transcript = transcript.toLowerCase().trim();
+            } else {
+                interimTranscript += transcript;
+            }
+        }
         
-        const res2 = await fetch('/api/voice_cmd', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcript: followUp })
+        // Show interim results
+        if (interimTranscript) {
+            transcriptDisplay.textContent = interimTranscript;
+            transcriptDisplay.classList.add('show');
+        }
+    };
+
+    state.recognition.onend = () => {
+        state.isListening = false;
+        startListeningBtn.classList.remove('listening');
+        startListeningBtn.textContent = '🎤 Talk to Assistant';
+        voiceVisualizer.classList.remove('listening');
+
+        // Process transcript if final
+        if (state.transcript) {
+            processSpeechInput(state.transcript);
+            state.transcript = '';
+        }
+    };
+
+    state.recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error !== 'no-speech') {
+            showAssistantMessage('Error: ' + event.error);
+        }
+        state.isListening = false;
+        startListeningBtn.classList.remove('listening');
+        voiceVisualizer.classList.remove('listening');
+    };
+}
+
+/**
+ * Process speech input
+ */
+async function processSpeechInput(transcript) {
+    console.log('Processing transcript:', transcript);
+    
+    // Check if trigger phrase is present
+    if (!transcript.includes(CONFIG.triggerPhrase)) {
+        console.log('Trigger phrase not detected. Ignoring.');
+        return;
+    }
+
+    // Remove trigger phrase and get command
+    const command = transcript.replace(CONFIG.triggerPhrase, '').trim();
+    if (!command) return;
+
+    // Show transcript
+    transcriptDisplay.textContent = `You: ${transcript}`;
+    transcriptDisplay.classList.add('show');
+
+    try {
+        // Send to GPT for parsing
+        const response = await fetch(`${CONFIG.apiBaseUrl}/parse_event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: command }),
         });
-        
-        const data2 = await res2.json();
-        showBubble(data2.assistant_text || 'Okay.');
-      }
+
+        if (!response.ok) throw new Error('Failed to parse command');
+        const data = await response.json();
+
+        if (data.success && data.event) {
+            // Book the event
+            await bookEvent(data.event);
+            showAssistantMessage(`Booked: ${data.event.title} on ${data.event.date} at ${data.event.time}`);
+            loadEvents();
+        } else {
+            showAssistantMessage(data.message || 'Could not understand the request.');
+        }
+    } catch (error) {
+        console.error('Error processing command:', error);
+        showAssistantMessage('Error processing your command.');
     }
-    
-  } catch (error) {
-    console.error('Error communicating with server:', error);
-    showBubble('Connection error. Please try again.');
-  }
 }
 
 /**
- * Listen for a single voice command with timeout
+ * Show assistant message in bubble
  */
-function listenOnce(timeoutMs = 8000) {
-  return new Promise((resolve) => {
-    if (!recognition) {
-      resolve(null);
-      return;
-    }
-    
-    let heard = null;
-    const recognizer = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognizer.interimResults = false;
-    recognizer.continuous = false;
-    recognizer.lang = 'en-US';
-    
-    recognizer.onstart = () => {
-      console.log('🎤 Listening for command...');
-    };
-    
-    recognizer.onresult = (event) => {
-      if (event.results && event.results.length > 0) {
-        heard = event.results[event.results.length - 1][0].transcript;
-        console.log('Heard:', heard);
-        recognizer.stop();
-      }
-    };
-    
-    recognizer.onerror = (event) => {
-      console.warn('Listen error:', event.error);
-      resolve(null);
-    };
-    
-    recognizer.onend = () => {
-      console.log('Listening stopped');
-      resolve(heard);
-    };
-    
-    // Start listening
-    try {
-      recognizer.start();
-    } catch (e) {
-      console.warn('Could not start listening:', e);
-      resolve(null);
-      return;
-    }
-    
-    // Timeout fallback
+function showAssistantMessage(message) {
+    assistantBubble.textContent = message;
+    assistantBubble.classList.add('show');
+
+    // Auto-hide after 5 seconds
     setTimeout(() => {
-      try {
-        recognizer.stop();
-      } catch (e) {}
-    }, timeoutMs);
-  });
+        assistantBubble.classList.remove('show');
+    }, 5000);
 }
 
 /**
- * Stop current speech and listening
+ * Start/stop listening
  */
-function stopAssistant() {
-  synth.cancel();
-  if (recognition) {
-    try {
-      recognition.stop();
-    } catch (e) {}
-  }
-  const bubble = document.getElementById('assistantBubble');
-  if (bubble) bubble.style.display = 'none';
+function toggleListening() {
+    if (!state.recognition) {
+        initializeSpeechRecognition();
+    }
+
+    if (state.isListening) {
+        state.recognition.stop();
+    } else {
+        state.recognition.start();
+    }
 }
+
+/**
+ * Book event via API
+ */
+async function bookEvent(event) {
+    try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/book_event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event),
+        });
+
+        if (!response.ok) throw new Error('Failed to book event');
+        return await response.json();
+    } catch (error) {
+        console.error('Error booking event:', error);
+        throw error;
+    }
+}
+
+/**
+ * Load and display events
+ */
+async function loadEvents() {
+    try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/get_events`);
+        if (!response.ok) throw new Error('Failed to load events');
+        
+        const data = await response.json();
+        const events = data.events || [];
+
+        eventList.innerHTML = '';
+
+        if (events.length === 0) {
+            eventList.innerHTML = '<div class="empty-state">No events scheduled</div>';
+            return;
+        }
+
+        events.forEach(event => {
+            const eventElement = createEventElement(event);
+            eventList.appendChild(eventElement);
+        });
+    } catch (error) {
+        console.error('Error loading events:', error);
+        eventList.innerHTML = '<div class="empty-state">Error loading events</div>';
+    }
+}
+
+/**
+ * Create event DOM element
+ */
+function createEventElement(event) {
+    const div = document.createElement('div');
+    div.className = 'event-item';
+    
+    const eventDate = new Date(event.start || event.date);
+    const dateStr = eventDate.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+    const timeStr = event.time || eventDate.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+
+    div.innerHTML = `
+        <div class="event-info">
+            <div class="event-title">${event.title || 'Untitled'}</div>
+            <div class="event-datetime">📅 ${dateStr} at ${timeStr}</div>
+        </div>
+        <button class="event-delete-btn" data-event-id="${event.id || event.event_id}">Delete</button>
+    `;
+
+    const deleteBtn = div.querySelector('.event-delete-btn');
+    deleteBtn.addEventListener('click', () => deleteEvent(event.id || event.event_id));
+
+    return div;
+}
+
+/**
+ * Delete event
+ */
+async function deleteEvent(eventId) {
+    try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/delete_event`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_id: eventId }),
+        });
+
+        if (!response.ok) throw new Error('Failed to delete event');
+        loadEvents();
+        showAssistantMessage('Event deleted.');
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        showAssistantMessage('Error deleting event.');
+    }
+}
+
+/**
+ * Handle manual booking form submission
+ */
+async function handleManualBooking(e) {
+    e.preventDefault();
+
+    const event = {
+        title: document.getElementById('eventTitle').value,
+        date: document.getElementById('eventDate').value,
+        time: document.getElementById('eventTime').value,
+    };
+
+    try {
+        await bookEvent(event);
+        showAssistantMessage(`Event "${event.title}" booked!`);
+        manualBookingForm.reset();
+        loadEvents();
+    } catch (error) {
+        showAssistantMessage('Error booking event.');
+    }
+}
+
+/**
+ * Event Listeners
+ */
+startListeningBtn.addEventListener('click', toggleListening);
+manualBookingForm.addEventListener('submit', handleManualBooking);
 
 /**
  * Initialize on page load
  */
-window.addEventListener('load', async () => {
-  console.log('🚀 Initializing Voice Assistant...');
-  
-  // Create bubble container
-  if (!document.getElementById('assistantBubble')) {
-    const bubble = document.createElement('div');
-    bubble.id = 'assistantBubble';
-    bubble.style.display = 'none';
-    document.body.appendChild(bubble);
-  }
-  
-  // Create stop button
-  if (!document.getElementById('voiceStopBtn')) {
-    const stopBtn = document.createElement('button');
-    stopBtn.id = 'voiceStopBtn';
-    stopBtn.innerHTML = '⏹️ Stop';
-    stopBtn.style.cssText = `
-      position: fixed;
-      right: 20px;
-      top: 20px;
-      padding: 8px 16px;
-      background: #EF4444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      z-index: 9998;
-      font-size: 12px;
-      font-weight: 500;
-      display: none;
-    `;
-    stopBtn.onclick = stopAssistant;
-    document.body.appendChild(stopBtn);
-  }
-  
-  // Check if user has trigger set locally
-  const localTrigger = sessionStorage.getItem('user_trigger');
-  if (localTrigger) {
-    console.log('✓ Trigger found locally. Starting wake loop...');
-    startWakeLoop();
-  } else {
-    console.log('ℹ️ No trigger set. Use settings to configure.');
-  }
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSpeechRecognition();
+    loadEvents();
 });
-
-// Export functions for use in HTML
-window.VoiceAssistant = {
-  setTrigger,
-  startListening: startWakeLoop,
-  stopListening: stopAssistant,
-  speak
-};

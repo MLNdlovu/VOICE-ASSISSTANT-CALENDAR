@@ -145,7 +145,7 @@ def login_required(f):
 def index():
     """Home page - redirect to dashboard if logged in, else auth page."""
     if 'access_token' in session:
-        return redirect(url_for('unified_dashboard'))
+        return redirect(url_for('home'))
     return render_template('auth.html')
 
 
@@ -171,7 +171,7 @@ def oauth_start():
 def login():
     """Show login/registration page."""
     if 'access_token' in session:
-        return redirect(url_for('unified_dashboard'))
+        return redirect(url_for('home'))
     
     if not CLIENT_SECRET_FILE:
         return render_template('auth.html', error="Client secret not configured")
@@ -207,8 +207,8 @@ def oauth_callback():
         user_info = service.userinfo().get().execute()
         session['user_email'] = user_info.get('email')
         
-        # Check for registration data in query params or show profile completion page
-        return render_template('oauth_callback.html')
+        # After successful OAuth, redirect to the new home dashboard
+        return redirect(url_for('home'))
     
     except Exception as e:
         print(f"OAuth error: {e}")
@@ -267,18 +267,18 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/home')
+@login_required
+def home():
+    """New split-screen voice assistant dashboard"""
+    return render_template('home.html', user_email=session.get('user_email'))
+
+
 @app.route('/unified')
 @login_required
 def unified_dashboard():
-    """Redirect to voice demo (simplified interface for demo)"""
-    # Ensure voice state is initialized
-    if 'voice_state' not in session:
-        session['voice_state'] = 'active'
-    if 'booking_context' not in session:
-        session['booking_context'] = {}
-    
-    user_name = session.get('user_firstname', 'Welcome')
-    return render_template('voice_demo.html', user_name=user_name)
+    """Redirect to new home page"""
+    return redirect(url_for('home'))
 
 
 @app.route('/ai')
@@ -288,18 +288,15 @@ def ai_chat():
     user_email = session.get('user_email', 'User')
     user_name = session.get('user_firstname', 'Welcome')
     user_trigger = session.get('user_trigger', 'XX00')
-    
-    return render_template('ai_chat.html',
-                         user_name=user_name,
-                         user_email=user_email,
-                         user_trigger=user_trigger)
+    # Legacy AI chat page removed - redirect to unified home dashboard
+    return redirect(url_for('home'))
 
 
 @app.route('/register')
 def register():
     """Show registration page."""
     if 'access_token' in session:
-        return redirect(url_for('unified_dashboard'))
+        return redirect(url_for('home'))
     return render_template('register.html')
 
 
@@ -385,7 +382,8 @@ def login_api():
 @login_required
 def dashboard():
     """Main dashboard page."""
-    return render_template('dashboard.html', user_email=session.get('user_email'))
+    # Dashboard template replaced by unified home - redirect to home
+    return redirect(url_for('home'))
 
 
 @app.route('/docs/<path:filename>')

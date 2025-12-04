@@ -1790,3 +1790,18 @@
 2025-11-27 11:42:37,673 - werkzeug - INFO - 127.0.0.1 - - [27/Nov/2025 11:42:37] "POST /api/voice/process-command HTTP/1.1" 200 -
 2025-11-27 11:42:46,574 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-11-27 11:43:00,176 - werkzeug - INFO - 127.0.0.1 - - [27/Nov/2025 11:43:00] "POST /api/voice/process-command HTTP/1.1" 200 -
+2025-11-30 14:25:25,043 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://localhost:5000
+2025-11-30 14:25:25,044 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-11-30 14:25:25,056 - werkzeug - INFO -  * Restarting with stat
+2025-11-30 14:25:26,826 - werkzeug - WARNING -  * Debugger is active!
+2025-11-30 14:25:26,838 - werkzeug - INFO -  * Debugger PIN: 391-861-930
+2025-11-30 14:25:31,569 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:25:31] "GET / HTTP/1.1" 200 -
+2025-11-30 14:25:31,646 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:25:31] "[33mGET /static/style.css HTTP/1.1[0m" 404 -
+2025-11-30 14:25:31,885 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:25:31] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-30 14:25:39,972 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:25:39] "[32mGET /auth/oauth-start HTTP/1.1[0m" 302 -
+2025-11-30 14:26:21,594 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-11-30 14:26:22,767 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:26:22] "[32mGET /oauth/callback?state=tyTVi3feIyBKhsQkiKaLvelGcRSXR5&code=4/0Ab32j91I1Krd8_OGa6GFU1mt10fdv199_uwB9J1-P1W1ay890-w5dXFUbOm3lb7819zw7A&scope=email%20profile%20https://www.googleapis.com/auth/calendar%20https://www.googleapis.com/auth/userinfo.profile%20https://www.googleapis.com/auth/userinfo.email%20openid&authuser=1&prompt=consent HTTP/1.1[0m" 302 -
+2025-11-30 14:26:22,792 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:26:22] "GET /home HTTP/1.1" 200 -
+2025-11-30 14:26:23,351 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:26:23] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-11-30 14:26:23,356 - werkzeug - INFO - 127.0.0.1 - - [30/Nov/2025 14:26:23] "GET /static/js/assistant.js HTTP/1.1" 200 -

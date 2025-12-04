@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗓️ AI Voice Assistant - Calendar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>🗓️ AI Voice Assistant</h1>
+                <span class="ai-badge">🤖 AI Powered</span>
+            </div>
+            <div class="header-right">
+                <span class="user-info">{{ user_email }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel: Voice Input -->
+            <section class="voice-panel">
+                <div class="voice-header">
+                    <h2>Voice Assistant</h2>
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+
+                <!-- Microphone Button & Visualizer -->
+                <div class="voice-control">
+                    <button id="micButton" class="mic-button" title="Click to start/stop listening">
+                        <span class="mic-icon">🎤</span>
+                        <span class="mic-text">Start Listening</span>
+                    </button>
+
+                    <!-- Wave Visualizer -->
+                    <div class="visualizer">
+                        <div class="wave wave1"></div>
+                        <div class="wave wave2"></div>
+                        <div class="wave wave3"></div>
+                    </div>
+                </div>
+
+                <!-- Transcript Display -->
+                <div class="transcript-box">
+                    <div class="transcript-label">Transcript:</div>
+                    <div class="transcript-interim" id="transcriptInterim"></div>
+                    <div class="transcript-final" id="transcriptFinal"></div>
+                </div>
+
+                <!-- AI Response -->
+                <div class="response-box" id="responseBox">
+                    <div class="response-label">Response:</div>
+                    <div class="response-text" id="responseText"></div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Calendar -->
+            <section class="calendar-panel">
+                <div class="calendar-header">
+                    <h2>📅 Calendar Events</h2>
+                    <button id="refreshBtn" class="refresh-btn" title="Refresh calendar">🔄</button>
+                </div>
+
+                <div class="events-list" id="eventsList">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Debug Panel (Development Mode) -->
+        <div class="debug-panel" id="debugPanel" style="display: none;">
+            <div class="debug-header">
+                <h3>🔧 Debug Panel (Dev Mode)</h3>
+                <button class="debug-close" id="debugClose">✕</button>
+            </div>
+            <div class="debug-content">
+                <div class="debug-section">
+                    <h4>AI Interpretation:</h4>
+                    <pre id="debugIntent">{}</pre>
+                </div>
+                <div class="debug-section">
+                    <h4>Execution Result:</h4>
+                    <pre id="debugResult">{}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Toggle (Dev Mode Only) -->
+        <div id="debugToggle" style="display: none; position: fixed; bottom: 20px; right: 20px;">
+            <button id="debugToggleBtn" class="debug-toggle-btn" title="Toggle debug panel">🔧</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Pass debug mode flag to JavaScript
+        window.DEBUG_MODE = false;
+        {% if request.args.get('debug') == 'true' %}
+        window.DEBUG_MODE = true;
+        document.getElementById('debugToggle').style.display = 'block';
+        document.getElementById('debugPanel').style.display = 'block';
+        {% endif %}
+    </script>
+    <script src="{{ url_for('static', filename='js/assistant.js') }}"></script>
+</body>
+</html>

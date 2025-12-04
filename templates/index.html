@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant Calendar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>🗓️ AI Voice Assistant</h1>
+                <span class="ai-badge">🤖 AI Powered</span>
+            </div>
+            <div class="header-right">
+                <span class="user-email">{{ user_email }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Left Panel: Voice Input -->
+            <section class="voice-panel">
+                <h2>Voice Command</h2>
+                
+                <!-- Status Indicator -->
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="status-text">Ready</span>
+                </div>
+
+                <!-- Microphone Button -->
+                <button id="mic-btn" class="mic-button">
+                    <span class="mic-icon">🎤</span>
+                    <span id="mic-text">Start Listening</span>
+                </button>
+
+                <!-- Transcript Display -->
+                <div class="transcript-display">
+                    <p id="interim-transcript" class="interim"></p>
+                    <p id="final-transcript" class="final"></p>
+                </div>
+
+                <!-- AI Response -->
+                <div id="ai-response-box" class="response-box" style="display: none;">
+                    <h3>AI Response</h3>
+                    <p id="ai-response-text"></p>
+                </div>
+
+                <!-- Wave Visualizer -->
+                <div class="wave-visualizer" id="visualizer">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Calendar Events -->
+            <section class="calendar-panel">
+                <h2>📅 Your Calendar</h2>
+                
+                <div id="events-list" class="events-list">
+                    <p class="loading">Loading events...</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Debug Panel (Dev Mode Only) -->
+        {% if debug_mode %}
+        <section class="debug-panel">
+            <h3>🐛 Debug Info (Dev Only)</h3>
+            <div id="debug-output" class="debug-output">
+                <p>Debug information will appear here...</p>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
